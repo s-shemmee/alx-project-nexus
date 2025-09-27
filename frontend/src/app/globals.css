@@ -1,0 +1,132 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light mode (Catppuccin Latte) */
+    --background: #eff1f5; /* Base */
+    --foreground: #4c4f69; /* Text */
+    --card: #dce0e8; /* Crust */
+    --card-foreground: #4c4f69; /* Text */
+    --popover: #dce0e8; /* Crust */
+    --popover-foreground: #4c4f69; /* Text */
+    --primary: #8839ef; /* Mauve */
+    --primary-foreground: #eff1f5; /* Base */
+    --secondary: #bcc0cc; /* Surface1 */
+    --secondary-foreground: #4c4f69; /* Text */
+    --muted: #bcc0cc; /* Surface1 */
+    --muted-foreground: #6c6f85; /* Subtext0 */
+    --accent: #8839ef; /* Mauve */
+    --accent-foreground: #eff1f5; /* Base */
+    --destructive: #d20f39; /* Red */
+    --destructive-foreground: #eff1f5; /* Base */
+    --border: #acb0be; /* Surface2 */
+    --input: #bcc0cc; /* Surface1 */
+    --ring: #8839ef; /* Mauve */
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    /* Dark mode (Catppuccin Mocha) */
+    --background: #1e1e2e; /* Base */
+    --foreground: #cdd6f4; /* Text */
+    --card: #11111b; /* Crust */
+    --card-foreground: #cdd6f4; /* Text */
+    --popover: #11111b; /* Crust */
+    --popover-foreground: #cdd6f4; /* Text */
+    --primary: #cba6f7; /* Mauve */
+    --primary-foreground: #1e1e2e; /* Base */
+    --secondary: #313244; /* Surface0 */
+    --secondary-foreground: #cdd6f4; /* Text */
+    --muted: #313244; /* Surface0 */
+    --muted-foreground: #a6adc8; /* Subtext0 */
+    --accent: #cba6f7; /* Mauve */
+    --accent-foreground: #1e1e2e; /* Base */
+    --destructive: #f38ba8; /* Red */
+    --destructive-foreground: #1e1e2e; /* Base */
+    --border: #45475a; /* Surface1 */
+    --input: #313244; /* Surface0 */
+    --ring: #cba6f7; /* Mauve */
+  }
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+  }
+  
+  .btn-primary {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+  }
+  
+  .btn-primary:hover {
+    background-color: var(--primary);
+    opacity: 0.9;
+  }
+  
+  .btn-secondary {
+    background-color: var(--secondary);
+    color: var(--secondary-foreground);
+  }
+  
+  .btn-secondary:hover {
+    background-color: var(--secondary);
+    opacity: 0.8;
+  }
+  
+  .btn-outline {
+    border: 1px solid var(--border);
+    background-color: var(--background);
+    color: var(--foreground);
+  }
+  
+  .btn-outline:hover {
+    background-color: var(--accent);
+    color: var(--accent-foreground);
+  }
+  
+  .btn-ghost {
+    background-color: transparent;
+    color: var(--foreground);
+  }
+  
+  .btn-ghost:hover {
+    background-color: var(--accent);
+    color: var(--accent-foreground);
+  }
+  
+  .card {
+    @apply rounded-lg border shadow-sm;
+    background-color: var(--card);
+    color: var(--card-foreground);
+  }
+  
+  .input {
+    @apply flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:cursor-not-allowed disabled:opacity-50;
+    border-color: var(--border);
+    background-color: var(--background);
+    color: var(--foreground);
+  }
+  
+  .input::placeholder {
+    color: var(--muted-foreground);
+  }
+  
+  .input:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--ring);
+  }
+}

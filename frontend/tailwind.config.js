@@ -1,0 +1,132 @@
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+  ],
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        // CSS custom properties
+        background: "var(--background)",
+        foreground: "var(--foreground)",
+        card: {
+          DEFAULT: "var(--card)",
+          foreground: "var(--card-foreground)",
+        },
+        popover: {
+          DEFAULT: "var(--popover)",
+          foreground: "var(--popover-foreground)",
+        },
+        primary: {
+          DEFAULT: "var(--primary)",
+          foreground: "var(--primary-foreground)",
+        },
+        secondary: {
+          DEFAULT: "var(--secondary)",
+          foreground: "var(--secondary-foreground)",
+        },
+        muted: {
+          DEFAULT: "var(--muted)",
+          foreground: "var(--muted-foreground)",
+        },
+        accent: {
+          DEFAULT: "var(--accent)",
+          foreground: "var(--accent-foreground)",
+        },
+        destructive: {
+          DEFAULT: "var(--destructive)",
+          foreground: "var(--destructive-foreground)",
+        },
+        border: "var(--border)",
+        input: "var(--input)",
+        ring: "var(--ring)",
+        // Catppuccin Mocha (Dark Mode - Default)
+        mocha: {
+          rosewater: "#f5e0dc",
+          flamingo: "#f2cdcd",
+          pink: "#f5c2e7",
+          mauve: "#cba6f7",
+          red: "#f38ba8",
+          maroon: "#eba0ac",
+          peach: "#fab387",
+          yellow: "#f9e2af",
+          green: "#a6e3a1",
+          teal: "#94e2d5",
+          sky: "#89dceb",
+          sapphire: "#74c7ec",
+          blue: "#89b4fa",
+          lavender: "#b4befe",
+          text: "#cdd6f4",
+          subtext1: "#bac2de",
+          subtext0: "#a6adc8",
+          overlay2: "#9399b2",
+          overlay1: "#7f849c",
+          overlay0: "#6c7086",
+          surface2: "#585b70",
+          surface1: "#45475a",
+          surface0: "#313244",
+          base: "#1e1e2e",
+          mantle: "#181825",
+          crust: "#11111b",
+        },
+        // Catppuccin Latte (Light Mode)
+        latte: {
+          rosewater: "#dc8a78",
+          flamingo: "#dd7878",
+          pink: "#ea76cb",
+          mauve: "#8839ef",
+          red: "#d20f39",
+          maroon: "#e64553",
+          peach: "#fe640b",
+          yellow: "#df8e1d",
+          green: "#40a02b",
+          teal: "#179299",
+          sky: "#04a5e5",
+          sapphire: "#209fb5",
+          blue: "#1e66f5",
+          lavender: "#7287fd",
+          text: "#4c4f69",
+          subtext1: "#5c5f77",
+          subtext0: "#6c6f85",
+          overlay2: "#7c7f93",
+          overlay1: "#8c8fa1",
+          overlay0: "#9ca0b0",
+          surface2: "#acb0be",
+          surface1: "#bcc0cc",
+          surface0: "#ccd0da",
+          base: "#eff1f5",
+          mantle: "#e6e9ef",
+          crust: "#dce0e8",
+        },
+      },
+      fontFamily: {
+        sans: ["Inter", "system-ui", "sans-serif"],
+      },
+      animation: {
+        "fade-in": "fadeIn 0.5s ease-in-out",
+        "slide-up": "slideUp 0.3s ease-out",
+        "bounce-gentle": "bounceGentle 0.6s ease-in-out",
+      },
+      keyframes: {
+        fadeIn: {
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
+        },
+        slideUp: {
+          "0%": { transform: "translateY(10px)", opacity: "0" },
+          "100%": { transform: "translateY(0)", opacity: "1" },
+        },
+        bounceGentle: {
+          "0%, 20%, 53%, 80%, 100%": { transform: "translate3d(0,0,0)" },
+          "40%, 43%": { transform: "translate3d(0,-8px,0)" },
+          "70%": { transform: "translate3d(0,-4px,0)" },
+          "90%": { transform: "translate3d(0,-2px,0)" },
+        },
+      },
+    },
+  },
+  plugins: [],
+};
