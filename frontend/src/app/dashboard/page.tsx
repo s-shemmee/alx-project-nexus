@@ -1,3 +1,18 @@
+/**
+ * Dashboard Page Component
+ * 
+ * This is the main dashboard interface for authenticated users.
+ * Features:
+ * - Auto-hover collapsible sidebar (280px expanded, 20px collapsed)
+ * - Three-column header layout with balanced spacing
+ * - Enhanced search functionality with real-time filtering
+ * - Poll management (create, view, edit, delete)
+ * - Responsive design with mobile-first approach
+ * - Poll statistics and voting interface
+ * - Theme toggle and user profile management
+ * - Smooth animations using Framer Motion
+ * - Real-time poll updates and vote counts
+ */
 "use client"
 
 import { useState, useEffect } from "react"
@@ -7,6 +22,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { PollCreateModal } from "@/components/poll/poll-create-modal"
+import { PollShare } from "@/components/poll/poll-share"
+import { PollDelete } from "@/components/poll/poll-delete"
 import { useAuth } from "@/store/auth"
 import { 
   BarChart3, 
@@ -33,11 +50,13 @@ import {
   ExternalLink,
   Heart,
   MessageCircle,
-  Activity
+  Activity,
+  Search
 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Poll as ApiPoll } from "@/lib/api"
 
+// Poll interface definition for type safety
 interface Poll {
   id: number
   title: string
@@ -56,18 +75,29 @@ interface Poll {
 export default function DashboardPage() {
   const router = useRouter()
   const { user, isAuthenticated, isLoading: authLoading, logout } = useAuth()
+  
+  // Component state management
   const [polls, setPolls] = useState<Poll[]>([])
   const [loading, setLoading] = useState(true)
-  const [sidebarExpanded, setSidebarExpanded] = useState(false)
+  const [sidebarExpanded, setSidebarExpanded] = useState(false) // Manual toggle state
+  const [sidebarHovered, setSidebarHovered] = useState(false) // Auto-hover state
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [searchTerm, setSearchTerm] = useState("") // Real-time search filtering
+  
+  // Modal states for poll actions
+  const [shareModalOpen, setShareModalOpen] = useState(false)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [selectedPoll, setSelectedPoll] = useState<Poll | null>(null)
 
+  // Fetch user polls when authenticated
   useEffect(() => {
     if (isAuthenticated) {
       fetchUserPolls()
     }
   }, [isAuthenticated])
 
-  // Auto close sidebar on desktop, auto open on mobile
+  // Responsive sidebar behavior: collapsed by default on all screen sizes
+  // Users can manually toggle or auto-hover to expand
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 1024) {
@@ -88,6 +118,7 @@ export default function DashboardPage() {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
+  // Fetch user's polls from the API
   const fetchUserPolls = async () => {
     try {
       setLoading(true)
@@ -130,6 +161,26 @@ export default function DashboardPage() {
     }
   }
 
+  // Poll action handlers
+  const handleSharePoll = (poll: Poll) => {
+    setSelectedPoll(poll)
+    setShareModalOpen(true)
+  }
+
+  const handleEditPoll = (poll: Poll) => {
+    router.push(`/poll/${poll.id}/edit`)
+  }
+
+  const handleDeletePoll = (poll: Poll) => {
+    setSelectedPoll(poll)
+    setDeleteModalOpen(true)
+  }
+
+  const handleDeleteSuccess = () => {
+    // Refresh polls after successful deletion
+    fetchUserPolls()
+  }
+
   const handleLogout = async () => {
     await logout()
     router.push('/')
@@ -153,6 +204,12 @@ export default function DashboardPage() {
     if (days > 0) return `${days}d ${hours}h left`
     return `${hours}h left`
   }
+
+  // Filter polls based on search term
+  const filteredPolls = polls.filter(poll => 
+    poll.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    poll.description.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   // Show loading state while checking authentication
   if (authLoading) {
@@ -207,86 +264,169 @@ export default function DashboardPage() {
 
       <div className="flex">
         {/* Enhanced Sidebar */}
-        {/* Desktop Sidebar - Always visible on desktop */}
-        <div className="hidden lg:flex w-80 bg-card/95 backdrop-blur-sm border-r border-border/50 flex-col h-screen sticky top-0 shadow-xl">
+        {/* Desktop Sidebar - Collapsible with hover */}
+        <div 
+          className={`hidden lg:flex ${sidebarHovered ? 'w-80' : 'w-20'} bg-card/95 backdrop-blur-sm border-r border-border/50 flex-col h-screen sticky top-0 shadow-xl transition-all duration-300 ease-in-out overflow-hidden`}
+          onMouseEnter={() => setSidebarHovered(true)}
+          onMouseLeave={() => setSidebarHovered(false)}
+        >
           {/* Sidebar Header */}
-          <div className="p-6 border-b">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-accent to-accent/80 rounded-xl flex items-center justify-center">
+          <div className={`${sidebarHovered ? 'p-6' : 'p-3'} border-b transition-all duration-300`}>
+            <div className="flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-br from-accent to-accent/80 rounded-xl flex items-center justify-center flex-shrink-0">
                 <BarChart3 className="h-6 w-6 text-white" />
               </div>
-              <div>
-                <h1 className="text-xl font-bold">Pollaroo</h1>
-                <p className="text-sm text-muted-foreground">Dashboard</p>
-              </div>
+              {sidebarHovered && (
+                <div className="ml-3 transition-all duration-300">
+                  <h1 className="text-xl font-bold whitespace-nowrap">Pollaroo</h1>
+                  <p className="text-sm text-muted-foreground whitespace-nowrap">Dashboard</p>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-6 space-y-1">
-            <Button
-              variant="ghost"
-              className="w-full justify-start h-12 hover:bg-accent/10 text-left px-4 transition-all duration-200 hover:translate-x-1"
-              onClick={() => router.push('/')}
-            >
-              <Home className="h-5 w-5 mr-3 flex-shrink-0" />
-              <span className="font-medium">Home</span>
-            </Button>
+          <nav className="flex-1 px-2 py-3 space-y-1">
+            {/* Home */}
+            <div className="relative group">
+              <Button
+                variant="ghost"
+                className={`w-full h-12 hover:bg-accent/10 transition-all duration-300 flex items-center ${sidebarHovered ? 'justify-start px-3' : 'justify-center px-0'}`}
+                onClick={() => router.push('/')}
+              >
+                <Home className="h-5 w-5 flex-shrink-0 text-muted-foreground group-hover:text-accent" />
+                {sidebarHovered && (
+                  <span className="ml-3 font-medium text-left flex-1">Home</span>
+                )}
+                {/* Tooltip for collapsed state */}
+                {!sidebarHovered && (
+                  <div className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-sm rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                    Home
+                  </div>
+                )}
+              </Button>
+            </div>
 
-            <Button
-              variant="ghost"
-              className="w-full justify-start h-12 hover:bg-accent/10 text-left px-4 transition-all duration-200 hover:translate-x-1"
-              onClick={() => router.push('/explore')}
-            >
-              <Eye className="h-5 w-5 mr-3 flex-shrink-0" />
-              <span className="font-medium">Explore Polls</span>
-            </Button>
+            {/* Explore Polls */}
+            <div className="relative group">
+              <Button
+                variant="ghost"
+                className={`w-full h-12 hover:bg-accent/10 transition-all duration-300 flex items-center ${sidebarHovered ? 'justify-start px-3' : 'justify-center px-0'}`}
+                onClick={() => router.push('/explore')}
+              >
+                <Eye className="h-5 w-5 flex-shrink-0 text-muted-foreground group-hover:text-accent" />
+                {sidebarHovered && (
+                  <span className="ml-3 font-medium text-left flex-1">Explore Polls</span>
+                )}
+                {!sidebarHovered && (
+                  <div className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-sm rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                    Explore Polls
+                  </div>
+                )}
+              </Button>
+            </div>
 
-            <Button
-              variant="ghost"
-              className="w-full justify-start h-12 hover:bg-accent/10 text-left px-4 transition-all duration-200 hover:translate-x-1"
-            >
-              <TrendingUp className="h-5 w-5 mr-3 flex-shrink-0" />
-              <span className="font-medium">Analytics</span>
-            </Button>
+            {/* Analytics */}
+            <div className="relative group">
+              <Button
+                variant="ghost"
+                className={`w-full h-12 hover:bg-accent/10 transition-all duration-300 flex items-center ${sidebarHovered ? 'justify-start px-3' : 'justify-center px-0'}`}
+              >
+                <TrendingUp className="h-5 w-5 flex-shrink-0 text-muted-foreground group-hover:text-accent" />
+                {sidebarHovered && (
+                  <span className="ml-3 font-medium text-left flex-1">Analytics</span>
+                )}
+                {!sidebarHovered && (
+                  <div className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-sm rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                    Analytics
+                  </div>
+                )}
+              </Button>
+            </div>
 
-            <Button
-              variant="ghost"
-              className="w-full justify-start h-12 hover:bg-accent/10 text-left px-4 transition-all duration-200 hover:translate-x-1"
-            >
-              <Activity className="h-5 w-5 mr-3 flex-shrink-0" />
-              <span className="font-medium">Activity</span>
-            </Button>
+            {/* Activity */}
+            <div className="relative group">
+              <Button
+                variant="ghost"
+                className={`w-full h-12 hover:bg-accent/10 transition-all duration-300 flex items-center ${sidebarHovered ? 'justify-start px-3' : 'justify-center px-0'}`}
+              >
+                <Activity className="h-5 w-5 flex-shrink-0 text-muted-foreground group-hover:text-accent" />
+                {sidebarHovered && (
+                  <span className="ml-3 font-medium text-left flex-1">Activity</span>
+                )}
+                {!sidebarHovered && (
+                  <div className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-sm rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                    Activity
+                  </div>
+                )}
+              </Button>
+            </div>
 
-            <Button
-              variant="ghost"
-              className="w-full justify-start h-12 hover:bg-accent/10 text-left px-4 transition-all duration-200 hover:translate-x-1"
-            >
-              <Settings className="h-5 w-5 mr-3 flex-shrink-0" />
-              <span className="font-medium">Settings</span>
-            </Button>
+            {/* Settings */}
+            <div className="relative group">
+              <Button
+                variant="ghost"
+                className={`w-full h-12 hover:bg-accent/10 transition-all duration-300 flex items-center ${sidebarHovered ? 'justify-start px-3' : 'justify-center px-0'}`}
+              >
+                <Settings className="h-5 w-5 flex-shrink-0 text-muted-foreground group-hover:text-accent" />
+                {sidebarHovered && (
+                  <span className="ml-3 font-medium text-left flex-1">Settings</span>
+                )}
+                {!sidebarHovered && (
+                  <div className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-sm rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                    Settings
+                  </div>
+                )}
+              </Button>
+            </div>
           </nav>
 
           {/* User Section */}
-          <div className="p-6 border-t">
-            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-              <div className="flex items-center space-x-3 flex-1 min-w-0">
-                <div className="w-10 h-10 bg-gradient-to-br from-accent to-accent/80 rounded-full flex items-center justify-center flex-shrink-0">
-                  <User className="h-5 w-5 text-white" />
+          <div className="px-2 py-3 border-t">
+            <div className="relative group">
+              {sidebarHovered ? (
+                <div className="flex items-center p-3 rounded-lg bg-muted/50 transition-all duration-300">
+                  <div className="flex items-center space-x-3 flex-1 min-w-0">
+                    <div className="w-10 h-10 bg-gradient-to-br from-accent to-accent/80 rounded-full flex items-center justify-center flex-shrink-0">
+                      <User className="h-5 w-5 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold truncate">{user?.username}</p>
+                      <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    className="h-10 w-10 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950/20 flex-shrink-0 ml-2 transition-all duration-300"
+                    onClick={handleLogout}
+                  >
+                    <LogOut className="h-5 w-5" />
+                  </Button>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate">{user?.username}</p>
-                  <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+              ) : (
+                <div className="flex flex-col items-center space-y-2">
+                  <div className="w-10 h-10 bg-gradient-to-br from-accent to-accent/80 rounded-full flex items-center justify-center flex-shrink-0">
+                    <User className="h-5 w-5 text-white" />
+                  </div>
+                  <Button
+                    variant="ghost"
+                    className="w-full h-10 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950/20 transition-all duration-300 flex items-center justify-center group/logout"
+                    onClick={handleLogout}
+                  >
+                    <LogOut className="h-5 w-5" />
+                    <div className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-sm rounded shadow-lg opacity-0 group-hover/logout:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                      Logout
+                    </div>
+                  </Button>
                 </div>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 flex-shrink-0"
-                onClick={handleLogout}
-              >
-                <LogOut className="h-4 w-4" />
-              </Button>
+              )}
+              
+              {/* Tooltip for user profile when collapsed */}
+              {!sidebarHovered && (
+                <div className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-sm rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50 top-3">
+                  {user?.username}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -425,7 +565,8 @@ export default function DashboardPage() {
         <div className="flex-1 flex flex-col min-h-screen">
           {/* Desktop Header */}
           <header className="hidden lg:flex border-b p-6 items-center justify-between bg-card/50 backdrop-blur-sm">
-            <div className="flex items-center space-x-4">
+            {/* Left Section - Title */}
+            <div className="flex-1">
               <div>
                 <h2 className="text-3xl font-bold bg-gradient-to-r from-accent to-accent/70 bg-clip-text text-transparent">
                   My Polls
@@ -433,15 +574,43 @@ export default function DashboardPage() {
                 <p className="text-muted-foreground">Manage and track your polls</p>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <Button 
-                onClick={() => setShowCreateModal(true)}
-                className="bg-gradient-to-r from-accent to-accent/90 hover:from-accent/90 hover:to-accent"
-              >
-                <Plus className="h-5 w-5 mr-2" />
-                Create Poll
-              </Button>
-              <ThemeToggle />
+            
+            {/* Center Section - Enhanced Search Bar */}
+            <div className="flex-1 flex justify-center px-8">
+              <div className="relative w-full max-w-md">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                  <Search className="h-5 w-5 text-muted-foreground" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search your polls..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-12 pr-4 py-3 border border-border bg-background rounded-xl text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all duration-200 shadow-sm hover:shadow-md"
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm("")}
+                    className="absolute inset-y-0 right-0 flex items-center pr-4 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+            
+            {/* Right Section - Actions */}
+            <div className="flex-1 flex justify-end">
+              <div className="flex items-center space-x-4">
+                <Button 
+                  onClick={() => setShowCreateModal(true)}
+                  className="bg-gradient-to-r from-accent to-accent/90 hover:from-accent/90 hover:to-accent shadow-lg hover:shadow-xl transition-all duration-200"
+                >
+                  <Plus className="h-5 w-5 mr-2" />
+                  Create Poll
+                </Button>
+                <ThemeToggle />
+              </div>
             </div>
           </header>
 
@@ -529,31 +698,38 @@ export default function DashboardPage() {
                   <p className="text-muted-foreground">Loading your polls...</p>
                 </div>
               </div>
-            ) : polls.length === 0 ? (
+            ) : filteredPolls.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="text-center py-16"
               >
                 <div className="w-24 h-24 bg-gradient-to-br from-accent/20 to-accent/10 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                  <BarChart3 className="h-12 w-12 text-accent" />
+                  {searchTerm ? <Search className="h-12 w-12 text-accent" /> : <BarChart3 className="h-12 w-12 text-accent" />}
                 </div>
-                <h3 className="text-2xl font-bold mb-3">No polls yet</h3>
+                <h3 className="text-2xl font-bold mb-3">
+                  {searchTerm ? 'No polls found' : 'No polls yet'}
+                </h3>
                 <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-                  Create your first poll to start engaging with your audience and gathering valuable insights.
+                  {searchTerm 
+                    ? `No polls match "${searchTerm}". Try searching with different keywords.`
+                    : 'Create your first poll to start engaging with your audience and gathering valuable insights.'
+                  }
                 </p>
-                <Button 
-                  onClick={() => setShowCreateModal(true)}
-                  className="bg-gradient-to-r from-accent to-accent/90 hover:from-accent/90 hover:to-accent"
-                  size="lg"
-                >
-                  <Plus className="h-5 w-5 mr-2" />
-                  Create Your First Poll
-                </Button>
+                {!searchTerm && (
+                  <Button 
+                    onClick={() => setShowCreateModal(true)}
+                    className="bg-gradient-to-r from-accent to-accent/90 hover:from-accent/90 hover:to-accent"
+                    size="lg"
+                  >
+                    <Plus className="h-5 w-5 mr-2" />
+                    Create Your First Poll
+                  </Button>
+                )}
               </motion.div>
             ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                {polls.map((poll, index) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {filteredPolls.map((poll, index) => (
                   <motion.div
                     key={poll.id}
                     initial={{ opacity: 0, y: 20 }}
@@ -563,7 +739,11 @@ export default function DashboardPage() {
                   >
                     <Card className="h-full hover:shadow-xl transition-all duration-300 hover:scale-[1.02] border-border/50 hover:border-accent/30">
                       <CardHeader className="pb-4">
-                        <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-start justify-between mb-4">
+                          {/* Left side - empty for balance */}
+                          <div></div>
+                          
+                          {/* Right side - Public/Private badge */}
                           <div className="flex items-center space-x-2">
                             {poll.is_public ? (
                               <Globe className="h-4 w-4 text-green-500" />
@@ -574,78 +754,77 @@ export default function DashboardPage() {
                               {poll.is_public ? "Public" : "Private"}
                             </Badge>
                           </div>
-                          <div className="flex items-center space-x-1">
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </div>
                         </div>
                         
-                        <CardTitle className="text-lg leading-tight mb-2 group-hover:text-accent transition-colors">
+                        <CardTitle className="text-xl leading-tight mb-3 group-hover:text-accent transition-colors">
                           {poll.title}
                         </CardTitle>
-                        <CardDescription className="text-sm line-clamp-2">
+                        <CardDescription className="text-sm line-clamp-2 mb-4">
                           {poll.description}
                         </CardDescription>
                       </CardHeader>
 
                       <CardContent className="pt-0">
-                        {/* Poll Stats */}
-                        <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
-                          <div className="flex items-center space-x-4">
-                            <div className="flex items-center space-x-1">
-                              <Users className="h-4 w-4" />
-                              <span className="font-medium">{poll.total_votes}</span>
+                        {/* Enhanced Poll Stats */}
+                        <div className="flex items-center justify-between text-sm text-muted-foreground mb-5">
+                          <div className="flex items-center space-x-6">
+                            <div className="flex items-center space-x-2 bg-accent/10 px-3 py-1 rounded-full">
+                              <Users className="h-4 w-4 text-accent" />
+                              <span className="font-semibold text-accent">{poll.total_votes}</span>
+                              <span className="text-xs">votes</span>
                             </div>
-                            <div className="flex items-center space-x-1">
-                              <MessageCircle className="h-4 w-4" />
-                              <span>{poll.options.length}</span>
+                            <div className="flex items-center space-x-2 bg-blue-500/10 px-3 py-1 rounded-full">
+                              <MessageCircle className="h-4 w-4 text-blue-500" />
+                              <span className="font-semibold text-blue-500">{poll.options.length}</span>
+                              <span className="text-xs">options</span>
                             </div>
                           </div>
                           {poll.expires_at && (
-                            <div className="flex items-center space-x-1 text-orange-500">
-                              <Clock className="h-4 w-4" />
-                              <span className="text-xs">{getTimeRemaining(poll.expires_at)}</span>
+                            <div className="flex items-center space-x-1 bg-orange-100 dark:bg-orange-900/20 px-2 py-1 rounded-full">
+                              <Clock className="h-4 w-4 text-orange-500" />
+                              <span className="text-xs font-medium text-orange-600 dark:text-orange-400">{getTimeRemaining(poll.expires_at)}</span>
                             </div>
                           )}
                         </div>
 
-                        {/* Top Options Preview */}
-                        <div className="space-y-2 mb-4">
-                          {poll.options.slice(0, 2).map((option, optionIndex) => {
+                        {/* Enhanced Options Preview - Show 3 instead of 2 */}
+                        <div className="space-y-3 mb-6">
+                          {poll.options.slice(0, 3).map((option, optionIndex) => {
                             const percentage = poll.total_votes > 0 
                               ? Math.round((option.votes / poll.total_votes) * 100) 
                               : 0
                             return (
-                              <div key={option.id} className="space-y-1">
-                                <div className="flex items-center justify-between text-xs">
-                                  <span className="truncate flex-1 mr-2">{option.text}</span>
-                                  <span className="font-medium text-accent">{percentage}%</span>
+                              <div key={option.id} className="space-y-2">
+                                <div className="flex items-center justify-between text-sm">
+                                  <span className="truncate flex-1 mr-3 font-medium">{option.text}</span>
+                                  <span className="font-bold text-accent bg-accent/10 px-2 py-1 rounded-full text-xs">{percentage}%</span>
                                 </div>
-                                <div className="w-full bg-muted rounded-full h-2">
+                                <div className="w-full bg-muted/50 rounded-full h-2.5 overflow-hidden">
                                   <motion.div 
                                     initial={{ width: 0 }}
                                     animate={{ width: `${percentage}%` }}
-                                    transition={{ duration: 0.8, delay: optionIndex * 0.2 }}
-                                    className="bg-gradient-to-r from-accent to-accent/80 h-2 rounded-full"
+                                    transition={{ duration: 0.8, delay: optionIndex * 0.15 }}
+                                    className="bg-gradient-to-r from-accent to-accent/80 h-2.5 rounded-full shadow-sm"
                                   />
                                 </div>
                               </div>
                             )
                           })}
-                          {poll.options.length > 2 && (
-                            <p className="text-xs text-muted-foreground">
-                              +{poll.options.length - 2} more options
-                            </p>
+                          {poll.options.length > 3 && (
+                            <div className="flex items-center justify-center py-2">
+                              <span className="text-xs text-muted-foreground bg-muted/50 px-3 py-1 rounded-full">
+                                +{poll.options.length - 3} more option{poll.options.length - 3 > 1 ? 's' : ''}
+                              </span>
+                            </div>
                           )}
                         </div>
 
-                        {/* Actions */}
-                        <div className="flex items-center space-x-2 pt-4 border-t">
+                        {/* Enhanced Actions */}
+                        <div className="flex items-center space-x-2 pt-5 border-t border-border/50">
                           <Button
                             variant="outline"
                             size="sm"
-                            className="flex-1 hover:bg-accent/10 hover:border-accent/30"
+                            className="flex-1 hover:bg-accent/10 hover:border-accent/30 h-9"
                             onClick={() => router.push(`/poll/${poll.id}`)}
                           >
                             <Eye className="h-4 w-4 mr-2" />
@@ -654,24 +833,24 @@ export default function DashboardPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="hover:bg-green-50 hover:border-green-300 hover:text-green-600"
-                            onClick={() => {/* TODO: Implement share */}}
+                            className="h-9 px-3 hover:bg-green-50 hover:border-green-300 hover:text-green-600 dark:hover:bg-green-950/20"
+                            onClick={() => handleSharePoll(poll)}
                           >
                             <Share2 className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="outline"
                             size="sm"
-                            className="hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600"
-                            onClick={() => {/* TODO: Implement edit */}}
+                            className="h-9 px-3 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600 dark:hover:bg-blue-950/20"
+                            onClick={() => handleEditPoll(poll)}
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="outline"
                             size="sm"
-                            className="hover:bg-red-50 hover:border-red-300 hover:text-red-600"
-                            onClick={() => {/* TODO: Implement delete */}}
+                            className="h-9 px-3 hover:bg-red-50 hover:border-red-300 hover:text-red-600 dark:hover:bg-red-950/20"
+                            onClick={() => handleDeletePoll(poll)}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -695,6 +874,32 @@ export default function DashboardPage() {
             setShowCreateModal(false)
             fetchUserPolls()
           }}
+        />
+      )}
+
+      {/* Share Poll Modal */}
+      {shareModalOpen && selectedPoll && (
+        <PollShare
+          isOpen={shareModalOpen}
+          onClose={() => {
+            setShareModalOpen(false)
+            setSelectedPoll(null)
+          }}
+          poll={selectedPoll}
+          pollUrl={`${typeof window !== 'undefined' ? window.location.origin : ''}/poll/${selectedPoll.id}`}
+        />
+      )}
+
+      {/* Delete Poll Modal */}
+      {deleteModalOpen && selectedPoll && (
+        <PollDelete
+          isOpen={deleteModalOpen}
+          onClose={() => {
+            setDeleteModalOpen(false)
+            setSelectedPoll(null)
+          }}
+          poll={selectedPoll}
+          onDeleteSuccess={handleDeleteSuccess}
         />
       )}
     </div>
