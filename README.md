@@ -1,125 +1,73 @@
-# Pollaroo 🗳️
+# Pollaroo - Interactive Polling Platform
 
-A full-stack real-time polling application built with Next.js 15 and Django 5, featuring beautiful Catppuccin themes and modern UI components.
+A modern, full-stack polling application that allows users to create, share, and participate in interactive polls. Built with Django REST Framework and Next.js, featuring real-time voting, user authentication, and responsive design.
 
-## ✨ Features
+## 🌟 Features
 
 - 🗳️ **Create Polls**: Build polls with multiple options and settings
 - ⚡ **Real-time Voting**: Live updates as votes come in
-- 📊 **Beautiful Charts**: Bar and pie chart visualizations
-- 🔗 **Easy Sharing**: Share polls with unique links
+- 🔐 **User Authentication**: Secure JWT-based login system
+- 📊 **Dashboard**: Personalized dashboard for managing your polls
+- 🔗 **Easy Sharing**: Share polls with unique URLs
 - 📱 **Mobile-First**: Responsive design for all devices
-- 🔐 **Authentication**: Secure JWT-based auth system
-- 🎨 **Dark Mode**: Catppuccin Mocha (default) with Latte light mode
-- 📈 **Dashboard**: Manage your polls and view analytics
-- 🌐 **Public Polls**: Discover and participate in community polls
+- 🎨 **Modern UI**: Clean interface with Tailwind CSS
+- 🛡️ **Security**: Input validation and permission-based access
 
-## 🛠 Tech Stack
-
-### Frontend
-- **Next.js 15** with App Router
-- **TypeScript** for type safety
-- **Tailwind CSS v4** for styling
-- **Custom UI Components** (Button, Card, Input, etc.)
-- **Catppuccin Theme System** (Mocha/Latte)
-- **Custom State Management** (React hooks)
+## 🛠 Technology Stack
 
 ### Backend
-- **Django 5.x** with REST Framework
-- **PostgreSQL** for data persistence
-- **JWT Authentication** with SimpleJWT
-- **CORS** for frontend integration
-- **Custom User Model** with profile fields
+- **Django 4.2** - Python web framework
+- **Django REST Framework** - API development
+- **SQLite** - Database (easily replaceable with PostgreSQL/MySQL)
+- **JWT Authentication** - Secure token-based authentication
+- **CORS Headers** - Cross-origin resource sharing support
 
-## 🚀 Quick Start
-
-### Option 1: Docker (Recommended)
-
-```bash
-# Clone the repository
-git clone <repository-url>
-cd pollaroo
-
-# Start all services
-docker-compose up
-
-# Access the application
-# Frontend: http://localhost:3000
-# Backend API: http://localhost:8000
-```
-
-### Option 2: Manual Setup
-
-#### Backend Setup
-```bash
-cd backend
-
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Set up environment variables
-cp env.example .env
-# Edit .env with your database settings
-
-# Run migrations
-python manage.py migrate
-
-# Create superuser (optional)
-python manage.py createsuperuser
-
-# Start development server
-python manage.py runserver
-```
-
-#### Frontend Setup
-```bash
-cd frontend
-
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-```
+### Frontend
+- **Next.js 14** - React framework with app router
+- **TypeScript** - Type-safe JavaScript development
+- **Tailwind CSS** - Utility-first CSS framework
+- **Zustand** - Lightweight state management
+- **React Hook Form** - Form handling with validation
+- **Sonner** - Beautiful toast notifications
 
 ## 📁 Project Structure
 
 ```
-pollaroo/
-├── frontend/                 # Next.js application
+alx-project-nexus/
+├── backend/                    # Django backend application
+│   ├── pollaroo/              # Django project configuration
+│   │   ├── settings.py        # Project settings
+│   │   ├── urls.py           # URL routing
+│   │   └── ...
+│   ├── polls/                 # Polls app
+│   │   ├── models.py         # Poll, Option, Vote models
+│   │   ├── views.py          # API endpoints
+│   │   ├── serializers.py    # Data serialization
+│   │   └── ...
+│   ├── users/                 # User authentication app
+│   │   ├── models.py         # User model extensions
+│   │   ├── views.py          # Auth endpoints
+│   │   └── ...
+│   ├── requirements.txt       # Python dependencies
+│   └── manage.py             # Django management script
+├── frontend/                  # Next.js frontend application
 │   ├── src/
-│   │   ├── app/             # App Router pages
-│   │   │   ├── dashboard/   # User dashboard
-│   │   │   ├── poll/[id]/   # Poll voting page
-│   │   │   └── polls/       # Public polls listing
-│   │   ├── components/      # Reusable components
-│   │   │   ├── auth/        # Authentication components
-│   │   │   ├── poll/        # Poll-related components
-│   │   │   └── ui/          # Base UI components
-│   │   ├── lib/             # Utilities and API client
-│   │   └── store/           # State management
-│   ├── tailwind.config.ts   # Tailwind configuration
-│   └── next.config.ts       # Next.js configuration
-├── backend/                 # Django API
-│   ├── pollaroo/           # Django project settings
-│   ├── polls/              # Polls app
-│   ├── users/              # User management app
-│   └── requirements.txt     # Python dependencies
-├── docker-compose.yml      # Development environment
-└── README.md
+│   │   ├── app/              # App router pages
+│   │   │   ├── dashboard/    # User dashboard
+│   │   │   ├── poll/         # Poll views
+│   │   │   └── ...
+│   │   ├── components/       # Reusable React components
+│   │   │   ├── auth/         # Authentication components
+│   │   │   ├── poll/         # Poll-related components
+│   │   │   └── ui/           # UI components
+│   │   ├── lib/              # Utility functions
+│   │   │   ├── api.ts        # API client
+│   │   │   └── utils.ts      # Helper functions
+│   │   └── store/            # State management
+│   ├── package.json          # Node.js dependencies
+│   └── ...
+└── README.md                 # Project documentation
 ```
-
-## 🎨 Theme System
-
-Pollaroo uses the beautiful Catppuccin color palette:
-
-- **Mocha (Dark Mode)**: Default dark theme with warm colors
-- **Latte (Light Mode)**: Clean light theme for daytime use
-- **Violet Accent**: Primary accent color throughout the app
 
 ## 🔧 API Endpoints
 
@@ -127,73 +75,138 @@ Pollaroo uses the beautiful Catppuccin color palette:
 - `POST /api/auth/register/` - User registration
 - `POST /api/auth/login/` - User login
 - `POST /api/auth/logout/` - User logout
-- `GET /api/auth/me/` - Get user profile
-- `PUT /api/auth/me/update/` - Update user profile
+- `GET /api/auth/user/` - Get current user info
 
 ### Polls
-- `GET /api/polls/` - List public polls
-- `POST /api/polls/create/` - Create new poll
+- `GET /api/polls/` - List public polls (with search/filter)
+- `POST /api/polls/` - Create new poll (authenticated)
 - `GET /api/polls/{id}/` - Get poll details
-- `PUT /api/polls/{id}/update/` - Update poll
-- `DELETE /api/polls/{id}/delete/` - Delete poll
-- `POST /api/polls/{id}/vote/` - Vote on poll
+- `PUT /api/polls/{id}/` - Update poll (owner only)
+- `DELETE /api/polls/{id}/` - Delete poll (owner only)
+- `GET /api/polls/user-polls/` - Get user's polls (authenticated)
+
+### Voting
+- `POST /api/polls/{id}/vote/` - Vote on a poll
 - `GET /api/polls/{id}/results/` - Get poll results
-- `GET /api/polls/my-polls/` - Get user's polls
 
-## 🧪 Testing
+## 🚀 Setup Instructions
 
-```bash
-# Backend tests
-cd backend
-python manage.py test
+### Prerequisites
+- Python 3.8+ 
+- Node.js 18+
+- npm or yarn
 
-# Frontend tests (when implemented)
-cd frontend
-npm test
-```
+### Backend Setup
 
-## 🚀 Deployment
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/s-shemmee/alx-project-nexus.git
+   cd alx-project-nexus/backend
+   ```
 
-### Production Environment Variables
+2. **Create virtual environment**
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
 
-#### Backend (.env)
-```
-SECRET_KEY=your-production-secret-key
-DEBUG=False
-DB_NAME=pollaroo_prod
-DB_USER=your-db-user
-DB_PASSWORD=your-db-password
-DB_HOST=your-db-host
-DB_PORT=5432
-REDIS_URL=redis://your-redis-host:6379/0
-```
+3. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-#### Frontend (.env.local)
-```
-NEXT_PUBLIC_API_URL=https://your-api-domain.com/api
-```
+4. **Environment configuration**
+   ```bash
+   cp env.example .env
+   # Edit .env with your configuration
+   ```
 
-### Deployment Options
+5. **Database setup**
+   ```bash
+   python manage.py makemigrations
+   python manage.py migrate
+   python manage.py createsuperuser  # Optional: create admin user
+   ```
 
-1. **Vercel** (Frontend) + **Railway/Render** (Backend)
-2. **Docker** on any cloud provider
-3. **Traditional VPS** with nginx + gunicorn
+6. **Run development server**
+   ```bash
+   python manage.py runserver
+   ```
+
+The backend API will be available at `http://localhost:8000`
+
+### Frontend Setup
+
+1. **Navigate to frontend directory**
+   ```bash
+   cd ../frontend
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
+
+3. **Environment configuration**
+   ```bash
+   # Create .env.local file with:
+   NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+   ```
+
+4. **Run development server**
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
+
+The frontend will be available at `http://localhost:3000`
+
+## 📖 Usage Guide
+
+### For Users
+1. **Registration**: Create account with username, email, and password
+2. **Login**: Access your account with email/username and password
+3. **Create Polls**: Use the dashboard to create new polls with multiple options
+4. **Share Polls**: Share poll URLs with others for voting
+5. **Vote**: Participate in polls and see real-time results
+6. **Manage**: View, edit, or delete your created polls from the dashboard
+
+### For Developers
+1. **API Testing**: Use the Django REST Framework browsable API at `/api/`
+2. **Admin Panel**: Access Django admin at `/admin/` with superuser credentials
+3. **Database**: SQLite database file is created automatically
+4. **Debugging**: Check browser console and Django logs for debugging
+
+## 🛡️ Security Features
+
+- **JWT Tokens**: Secure authentication with refresh tokens
+- **CORS**: Properly configured cross-origin requests
+- **Input Sanitization**: Protection against common web vulnerabilities
+- **Permission Checks**: Proper authorization for all API endpoints
+- **Data Validation**: Frontend and backend validation for data integrity
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## 📄 License
 
-MIT License - see LICENSE file for details
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## 👨‍💻 Contact
 
-- [Catppuccin](https://github.com/catppuccin/catppuccin) for the beautiful color palette
-- [Next.js](https://nextjs.org/) for the amazing React framework
-- [Django](https://djangoproject.com/) for the robust backend framework
-- [Tailwind CSS](https://tailwindcss.com/) for the utility-first CSS framework
+- **Developer**: ALX Software Engineering Student
+- **Repository**: [https://github.com/s-shemmee/alx-project-nexus](https://github.com/s-shemmee/alx-project-nexus)
+- **Project**: Full-Stack Polling Application
+- **Purpose**: Portfolio project demonstrating full-stack development skills
+
+---
+
+*Built with ❤️ using Django and Next.js*
