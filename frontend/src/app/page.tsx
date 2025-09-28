@@ -20,13 +20,13 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { AuthModal } from "@/components/auth/auth-modal"
+import { Footer } from "@/components/footer"
 import { useAuth } from "@/store/auth"
 import { BarChart3, Users, Zap, Share2, LogOut, User, Eye, Settings, Sparkles, TrendingUp, Shield, Clock } from "lucide-react"
 
 export default function HomePage() {
   // Component state for UI interactions
   const router = useRouter()
-  const [isCreating, setIsCreating] = useState(false)
   const [authModalOpen, setAuthModalOpen] = useState(false)
   const [authMode, setAuthMode] = useState<"login" | "register">("login")
   const { user, isAuthenticated, logout, loadUser, isLoading } = useAuth()
@@ -226,7 +226,7 @@ export default function HomePage() {
             <Button 
               size="lg" 
               className="h-auto px-8 py-6 text-lg transition-all duration-300 transform shadow-lg group bg-gradient-to-r from-accent to-blue-500 hover:from-accent/90 hover:to-blue-500/90 hover:shadow-xl hover:-translate-y-1"
-              onClick={() => isAuthenticated ? setIsCreating(true) : handleAuthClick("register")}
+              onClick={() => isAuthenticated ? router.push('/dashboard') : handleAuthClick("register")}
             >
               <Zap className="w-5 h-5 mr-2 group-hover:animate-pulse" />
               {isAuthenticated ? "Create New Poll" : "Create Your First Poll"}
@@ -242,18 +242,6 @@ export default function HomePage() {
               <Eye className="w-5 h-5 mr-2 transition-transform group-hover:scale-110" />
               Explore Public Polls
             </Button>
-            
-            {isAuthenticated && (
-              <Button 
-                variant="secondary" 
-                size="lg" 
-                className="h-auto px-8 py-6 text-lg transition-all duration-300 transform group hover:bg-secondary/80 hover:-translate-y-1"
-                onClick={() => router.push('/dashboard')}
-              >
-                <BarChart3 className="w-5 h-5 mr-2 transition-transform group-hover:rotate-12" />
-                Dashboard
-              </Button>
-            )}
           </div>
 
           {/* Stats Row */}
@@ -480,19 +468,7 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="mt-16 border-t">
-        <div className="container px-4 py-8 mx-auto">
-          <div className="flex flex-col items-center justify-between md:flex-row">
-            <div className="flex items-center mb-4 space-x-2 md:mb-0">
-              <BarChart3 className="w-6 h-6 text-accent" />
-              <span className="font-semibold">Pollaroo</span>
-            </div>
-            <div className="text-sm text-muted-foreground">
-              Built with Next.js 15 & Django 5
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
 
       {/* Auth Modal */}
       <AuthModal 
