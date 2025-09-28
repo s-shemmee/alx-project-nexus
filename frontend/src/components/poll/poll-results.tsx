@@ -10,10 +10,17 @@ import { motion } from "framer-motion"
 
 interface PollResultsProps {
   poll: Poll
+  chartType?: "bar" | "pie" | "donut"
+  showPercentages?: boolean
 }
 
-export function PollResults({ poll }: PollResultsProps) {
-  const [chartType, setChartType] = useState<"bar" | "pie">("bar")
+export function PollResults({ poll, chartType: externalChartType, showPercentages = true }: PollResultsProps) {
+  const [internalChartType, setInternalChartType] = useState<"bar" | "pie">("bar")
+  
+  // Use external chartType if provided, otherwise use internal state
+  const activeChartType = externalChartType && (externalChartType === "bar" || externalChartType === "pie") 
+    ? externalChartType 
+    : internalChartType
 
   if (!poll.options || poll.options.length === 0) {
     return (
@@ -29,8 +36,8 @@ export function PollResults({ poll }: PollResultsProps) {
   const chartData = poll.options.map((option, index) => ({
     name: option.text.length > 20 ? option.text.substring(0, 20) + "..." : option.text,
     fullName: option.text,
-    votes: option.vote_count || 0,
-    percentage: totalVotes > 0 ? ((option.vote_count || 0) / totalVotes * 100).toFixed(1) : 0,
+    votes: option.votes || option.vote_count || 0,
+    percentage: totalVotes > 0 ? ((option.votes || option.vote_count || 0) / totalVotes * 100).toFixed(1) : 0,
     color: getColor(index)
   }))
 
@@ -61,17 +68,17 @@ export function PollResults({ poll }: PollResultsProps) {
       {/* Chart Type Toggle */}
       <div className="flex justify-center space-x-2">
         <Button
-          variant={chartType === "bar" ? "default" : "outline"}
+          variant={activeChartType === "bar" ? "default" : "outline"}
           size="sm"
-          onClick={() => setChartType("bar")}
+          onClick={() => setInternalChartType("bar")}
         >
           <BarChart3 className="h-4 w-4 mr-2" />
           Bar Chart
         </Button>
         <Button
-          variant={chartType === "pie" ? "default" : "outline"}
+          variant={activeChartType === "pie" ? "default" : "outline"}
           size="sm"
-          onClick={() => setChartType("pie")}
+          onClick={() => setInternalChartType("pie")}
         >
           <PieChart className="h-4 w-4 mr-2" />
           Pie Chart
@@ -82,7 +89,7 @@ export function PollResults({ poll }: PollResultsProps) {
       <Card>
         <CardContent className="p-6">
           <div className="h-80">
-            {chartType === "bar" ? (
+            {activeChartType === "bar" ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
@@ -157,7 +164,7 @@ export function PollResults({ poll }: PollResultsProps) {
       <div className="space-y-3">
         <h4 className="text-lg font-semibold">Detailed Results</h4>
         {poll.options.map((option, index) => {
-          const percentage = totalVotes > 0 ? ((option.vote_count || 0) / totalVotes * 100) : 0
+          const percentage = totalVotes > 0 ? ((option.votes || option.vote_count || 0) / totalVotes * 100) : 0
           const color = getColor(index)
 
           return (
@@ -171,7 +178,7 @@ export function PollResults({ poll }: PollResultsProps) {
               <div className="flex justify-between items-center">
                 <span className="font-medium">{option.text}</span>
                 <span className="text-sm text-muted-foreground">
-                  {option.vote_count || 0} votes ({percentage.toFixed(1)}%)
+                  {option.votes || option.vote_count || 0} votes ({percentage.toFixed(1)}%)
                 </span>
               </div>
               
