@@ -1,11 +1,29 @@
+/**
+ * Login Form Component
+ * 
+ * Enhanced login form with comprehensive validation and user experience features.
+ * Features:
+ * - Zod schema validation with react-hook-form integration
+ * - Support for both email and username authentication
+ * - Real-time password visibility toggle
+ * - Colorful toast notifications for success/error feedback
+ * - Loading states with disabled form during submission
+ * - Error handling with field-specific validation messages
+ * - Smooth transitions and hover effects
+ * - Accessibility features with proper ARIA labels
+ */
 "use client"
 
-import { useState } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useAuth } from "@/store/auth"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
+import { loginSchema, type LoginFormData } from "@/lib/validations"
+import { useState } from "react"
+import { toast } from "sonner"
 
 interface LoginFormProps {
   onSuccess?: () => void
@@ -13,28 +31,47 @@ interface LoginFormProps {
 }
 
 export function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormProps) {
-  const [formData, setFormData] = useState({
-    username: "",
-    password: "",
-  })
+  // Password visibility toggle state
   const [showPassword, setShowPassword] = useState(false)
-  const { login, isLoading, error, clearError } = useAuth()
+  const { login, isLoading, clearError } = useAuth()
+  
+  // Form setup with Zod validation schema
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setError,
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      login: "",
+      password: "",
+    },
+  })
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const onSubmit = async (data: LoginFormData) => {
     clearError()
     
-    const success = await login(formData)
+    // Show loading toast
+    toast.loading('Signing you in...', { 
+      id: 'login',
+      duration: Infinity 
+    })
+    
+    const success = await login(data)
+    
+    // Dismiss loading toast
+    toast.dismiss('login')
+    
     if (success && onSuccess) {
       onSuccess()
+    } else if (!success) {
+      setError("login", { message: "Invalid credentials" })
+      toast.error('Login failed', {
+        description: 'Please check your credentials and try again.',
+        duration: 4000,
+      })
     }
-  }
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }))
   }
 
   return (
@@ -46,41 +83,34 @@ export function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormProps) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">
-              {error}
-            </div>
-          )}
-          
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <label htmlFor="username" className="text-sm font-medium">
+            <label htmlFor="login" className="text-sm font-medium">
               Username or Email
             </label>
             <Input
-              id="username"
-              name="username"
+              id="login"
               type="text"
-              value={formData.username}
-              onChange={handleChange}
-              required
               placeholder="Enter your username or email"
+              {...register("login")}
+              className={errors.login ? "border-red-500" : ""}
             />
+            {errors.login && (
+              <p className="text-sm text-red-500">{errors.login.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">
             <label htmlFor="password" className="text-sm font-medium">
-            Password
+              Password
             </label>
             <div className="relative">
               <Input
                 id="password"
-                name="password"
                 type={showPassword ? "text" : "password"}
-                value={formData.password}
-                onChange={handleChange}
-                required
                 placeholder="Enter your password"
+                {...register("password")}
+                className={errors.password ? "border-red-500" : ""}
               />
               <Button
                 type="button"
@@ -96,10 +126,13 @@ export function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormProps) {
                 )}
               </Button>
             </div>
+            {errors.password && (
+              <p className="text-sm text-red-500">{errors.password.message}</p>
+            )}
           </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? (
+          <Button type="submit" className="w-full" disabled={isLoading || isSubmitting}>
+            {isLoading || isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Signing in...
