@@ -171,7 +171,7 @@ export default function PublicPollsPage() {
                     
                     <div className="flex items-center justify-between pt-2">
                       <span className="text-sm text-muted-foreground">
-                        by {poll.creator}
+                        by {typeof poll.creator === 'string' ? poll.creator : poll.creator.username}
                       </span>
                       <Button variant="outline" size="sm">
                         <BarChart3 className="h-4 w-4 mr-2" />
