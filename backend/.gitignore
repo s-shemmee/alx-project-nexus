@@ -30,14 +30,23 @@ db.sqlite3
 db.sqlite3-journal
 media/
 
-# Environment variables
+# Environment variables - NEVER COMMIT THESE!
 .env
+.env.local
+.env.production
+.env.development
 .venv
 env/
 venv/
 ENV/
 env.bak/
 venv.bak/
+
+# Database files - NEVER COMMIT THESE!
+db.sqlite3
+db.sqlite3-journal
+*.db
+pollaroo_new.db
 
 # IDE
 .vscode/
