@@ -9,6 +9,7 @@ import { apiClient, Poll } from "@/lib/api"
 import { BarChart3, Share2, Users, Calendar, CheckCircle, Loader2 } from "lucide-react"
 import { PollResults } from "@/components/poll/poll-results"
 import { PollShare } from "@/components/poll/poll-share"
+import { toast } from "sonner"
 
 export default function PollPage() {
   const params = useParams()
@@ -59,14 +60,32 @@ export default function PollPage() {
     try {
       const response = await apiClient.vote(poll.id, selectedOption)
       if (response.data) {
+        // Mark as voted first
         setHasVoted(true)
-        // Reload poll to get updated results
-        loadPoll()
+        
+        // Show success message
+        toast.success("Vote submitted successfully! 🎉", {
+          description: "Thank you for participating in this poll."
+        })
+        
+        // Reload poll to get updated results but preserve hasVoted state
+        const updatedResponse = await apiClient.getPoll(pollId)
+        if (updatedResponse.data) {
+          setPoll(updatedResponse.data)
+          // Keep hasVoted as true - don't reset it
+        }
       } else {
         setError(response.error || "Failed to vote")
+        toast.error("Failed to submit vote", {
+          description: response.error || "Please try again."
+        })
       }
     } catch (error) {
+      console.error("Vote submission error:", error)
       setError("Network error occurred")
+      toast.error("Network error occurred", {
+        description: "Please check your connection and try again."
+      })
     } finally {
       setIsVoting(false)
     }

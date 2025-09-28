@@ -24,22 +24,13 @@ export function PollResults({ poll, chartType: externalChartType, showPercentage
 
   if (!poll.options || poll.options.length === 0) {
     return (
-      <div className="text-center py-8">
+      <div className="py-8 text-center">
         <p className="text-muted-foreground">No options available</p>
       </div>
     )
   }
 
   const totalVotes = poll.total_votes || 0
-
-  // Prepare data for charts
-  const chartData = poll.options.map((option, index) => ({
-    name: option.text.length > 20 ? option.text.substring(0, 20) + "..." : option.text,
-    fullName: option.text,
-    votes: option.votes || option.vote_count || 0,
-    percentage: totalVotes > 0 ? ((option.votes || option.vote_count || 0) / totalVotes * 100).toFixed(1) : 0,
-    color: getColor(index)
-  }))
 
   const colors = [
     "#cba6f7", // mauve
@@ -58,6 +49,15 @@ export function PollResults({ poll, chartType: externalChartType, showPercentage
     return colors[index % colors.length]
   }
 
+  // Prepare data for charts
+  const chartData = poll.options.map((option, index) => ({
+    name: option.text.length > 20 ? option.text.substring(0, 20) + "..." : option.text,
+    fullName: option.text,
+    votes: option.votes || option.vote_count || 0,
+    percentage: totalVotes > 0 ? ((option.votes || option.vote_count || 0) / totalVotes * 100).toFixed(1) : 0,
+    color: getColor(index)
+  }))
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -72,7 +72,7 @@ export function PollResults({ poll, chartType: externalChartType, showPercentage
           size="sm"
           onClick={() => setInternalChartType("bar")}
         >
-          <BarChart3 className="h-4 w-4 mr-2" />
+          <BarChart3 className="w-4 h-4 mr-2" />
           Bar Chart
         </Button>
         <Button
@@ -80,7 +80,7 @@ export function PollResults({ poll, chartType: externalChartType, showPercentage
           size="sm"
           onClick={() => setInternalChartType("pie")}
         >
-          <PieChart className="h-4 w-4 mr-2" />
+          <PieChart className="w-4 h-4 mr-2" />
           Pie Chart
         </Button>
       </div>
@@ -175,19 +175,19 @@ export function PollResults({ poll, chartType: externalChartType, showPercentage
               transition={{ duration: 0.3, delay: index * 0.1 }}
               className="space-y-2"
             >
-              <div className="flex justify-between items-center">
+              <div className="flex items-center justify-between">
                 <span className="font-medium">{option.text}</span>
                 <span className="text-sm text-muted-foreground">
                   {option.votes || option.vote_count || 0} votes ({percentage.toFixed(1)}%)
                 </span>
               </div>
               
-              <div className="w-full bg-muted rounded-full h-3">
+              <div className="w-full h-3 rounded-full bg-muted">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${percentage}%` }}
                   transition={{ duration: 1, delay: index * 0.1 }}
-                  className="h-3 rounded-full transition-all duration-500"
+                  className="h-3 transition-all duration-500 rounded-full"
                   style={{ backgroundColor: color }}
                 />
               </div>
@@ -201,13 +201,13 @@ export function PollResults({ poll, chartType: externalChartType, showPercentage
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.3 }}
-        className="text-center pt-4 border-t"
+        className="pt-4 text-center border-t"
       >
         <p className="text-sm text-muted-foreground">
           Total votes: <span className="font-semibold">{totalVotes}</span>
         </p>
         {poll.expires_at && (
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="mt-1 text-sm text-muted-foreground">
             {poll.is_expired ? "Poll has ended" : `Expires ${new Date(poll.expires_at).toLocaleDateString()}`}
           </p>
         )}
