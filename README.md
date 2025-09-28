@@ -1,4 +1,4 @@
-# Pollaroo - Interactive Polling Platform
+# 📊 Pollaroo - Interactive Polling Platform
 
 A modern, full-stack polling application that allows users to create, share, and participate in interactive polls. Built with Django REST Framework and Next.js, featuring real-time voting, user authentication, and responsive design.
 
