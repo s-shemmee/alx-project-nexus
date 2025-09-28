@@ -233,4 +233,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-*Built with ❤️ using Django and Next.js*
+*Built with 💜 using Django and Next.js*
