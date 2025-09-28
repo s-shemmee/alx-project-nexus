@@ -22,10 +22,15 @@ export default function PollPage() {
   const [hasVoted, setHasVoted] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [shareModalOpen, setShareModalOpen] = useState(false)
+  const [pollUrl, setPollUrl] = useState("")
 
   useEffect(() => {
     if (pollId) {
       loadPoll()
+    }
+    // Set poll URL after component mounts (client-side only)
+    if (typeof window !== 'undefined') {
+      setPollUrl(`${window.location.origin}/poll/${pollId}`)
     }
   }, [pollId])
 
@@ -73,9 +78,9 @@ export default function PollPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto" />
+          <Loader2 className="w-8 h-8 mx-auto animate-spin" />
           <p className="mt-4 text-muted-foreground">Loading poll...</p>
         </div>
       </div>
@@ -84,7 +89,7 @@ export default function PollPage() {
 
   if (error || !poll) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="flex items-center justify-center min-h-screen bg-background">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <CardTitle>Poll Not Found</CardTitle>
@@ -108,7 +113,7 @@ export default function PollPage() {
   if (poll.is_expired) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-8">
+        <div className="container px-4 py-8 mx-auto">
           <Card className="max-w-2xl mx-auto">
             <CardHeader>
               <CardTitle className="text-2xl">{poll.title}</CardTitle>
@@ -117,11 +122,11 @@ export default function PollPage() {
               )}
               <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                 <div className="flex items-center space-x-1">
-                  <Users className="h-4 w-4" />
+                  <Users className="w-4 h-4" />
                   <span>{poll.total_votes} votes</span>
                 </div>
                 <div className="flex items-center space-x-1">
-                  <Calendar className="h-4 w-4" />
+                  <Calendar className="w-4 h-4" />
                   <span>Expired</span>
                 </div>
               </div>
@@ -137,7 +142,7 @@ export default function PollPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container px-4 py-8 mx-auto">
         <Card className="max-w-2xl mx-auto">
           <CardHeader>
             <div className="flex items-start justify-between">
@@ -146,29 +151,29 @@ export default function PollPage() {
                 {poll.description && (
                   <CardDescription className="mt-2">{poll.description}</CardDescription>
                 )}
-                <div className="flex items-center space-x-4 text-sm text-muted-foreground mt-4">
+                <div className="flex items-center mt-4 space-x-4 text-sm text-muted-foreground">
                   <div className="flex items-center space-x-1">
-                    <Users className="h-4 w-4" />
+                    <Users className="w-4 h-4" />
                     <span>{poll.total_votes} votes</span>
                   </div>
                   <div className="flex items-center space-x-1">
-                    <Calendar className="h-4 w-4" />
+                    <Calendar className="w-4 h-4" />
                     <span>Created {new Date(poll.created_at).toLocaleDateString()}</span>
                   </div>
                 </div>
               </div>
               <Button variant="outline" size="icon" onClick={handleShare}>
-                <Share2 className="h-4 w-4" />
+                <Share2 className="w-4 h-4" />
               </Button>
             </div>
           </CardHeader>
           
           <CardContent>
             {hasVoted ? (
-              <div className="text-center py-8">
-                <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold mb-2">Thank you for voting!</h3>
-                <p className="text-muted-foreground mb-6">
+              <div className="py-8 text-center">
+                <CheckCircle className="w-16 h-16 mx-auto mb-4 text-green-500" />
+                <h3 className="mb-2 text-xl font-semibold">Thank you for voting!</h3>
+                <p className="mb-6 text-muted-foreground">
                   Your vote has been recorded. Here are the current results:
                 </p>
                 <PollResults poll={poll} />
@@ -181,7 +186,7 @@ export default function PollPage() {
                     <Button
                       key={option.id}
                       variant={selectedOption === option.id ? "default" : "outline"}
-                      className="w-full justify-start h-auto p-4"
+                      className="justify-start w-full h-auto p-4"
                       onClick={() => setSelectedOption(option.id)}
                     >
                       <div className="flex items-center space-x-3">
@@ -207,7 +212,7 @@ export default function PollPage() {
                 >
                   {isVoting ? (
                     <>
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                       Submitting...
                     </>
                   ) : (
@@ -221,10 +226,10 @@ export default function PollPage() {
       </div>
 
       {/* Share Modal */}
-      {poll && (
+      {poll && pollUrl && (
         <PollShare
-          pollId={poll.id}
-          pollTitle={poll.title}
+          poll={poll}
+          pollUrl={pollUrl}
           isOpen={shareModalOpen}
           onClose={() => setShareModalOpen(false)}
         />
