@@ -98,7 +98,7 @@ const login = async (credentials: { login: string; password: string }) => {
         duration: 5000,
         action: {
           label: 'Try Again',
-          onClick: () => console.log('Retry login'),
+          onClick: () => {}, // Handled by retry functionality
         },
       })
       notify()
@@ -169,7 +169,7 @@ const register = async (userData: {
         duration: 5000,
         action: {
           label: 'Fix Issues',
-          onClick: () => console.log('Focus on form errors'),
+          onClick: () => {}, // Form error handling managed by form validation
         },
       })
       notify()
