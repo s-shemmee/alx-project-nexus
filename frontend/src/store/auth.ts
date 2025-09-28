@@ -1,7 +1,25 @@
+/**
+ * Authentication Store
+ * 
+ * Lightweight React state management for user authentication without external dependencies.
+ * This store handles all authentication-related state and operations.
+ * 
+ * Features:
+ * - JWT token management with localStorage persistence
+ * - User registration and login with form validation
+ * - Automatic token refresh and session management
+ * - Error handling with toast notifications
+ * - Profile updates and user data management
+ * - React hooks integration for component state updates
+ * - Secure logout with token cleanup
+ * - Loading states for better UX
+ */
+
 import React from 'react'
 import { apiClient, User } from '@/lib/api'
 import { toast } from 'sonner'
 
+// Authentication state interface
 interface AuthState {
   user: User | null
   isAuthenticated: boolean
@@ -9,15 +27,14 @@ interface AuthState {
   error: string | null
 }
 
+// Authentication actions interface
 interface AuthActions {
-  login: (credentials: { username: string; password: string }) => Promise<boolean>
+  login: (credentials: { login: string; password: string }) => Promise<boolean>
   register: (userData: {
     username: string
     email: string
     password: string
     password_confirm: string
-    first_name?: string
-    last_name?: string
   }) => Promise<boolean>
   logout: () => Promise<void>
   loadUser: () => Promise<void>
@@ -25,7 +42,7 @@ interface AuthActions {
   updateProfile: (userData: Partial<User>) => Promise<boolean>
 }
 
-// Simple state management without external dependencies
+// Global state management without external dependencies
 let state: AuthState = {
   user: null,
   isAuthenticated: false,
@@ -33,13 +50,16 @@ let state: AuthState = {
   error: null,
 }
 
+// Component listeners for state updates
 const listeners = new Set<() => void>()
 
+// Notify all subscribed components of state changes
 const notify = () => {
   listeners.forEach(listener => listener())
 }
 
-const login = async (credentials: { username: string; password: string }) => {
+// User login with email/username support
+const login = async (credentials: { login: string; password: string }) => {
   state = { ...state, isLoading: true, error: null }
   notify()
   
@@ -55,7 +75,14 @@ const login = async (credentials: { username: string; password: string }) => {
         error: null,
       }
       // Show success toast
-      toast.success(`Welcome back, ${response.data.user.username}!`)
+      toast.success('Welcome back!', {
+        description: `Successfully logged in as ${response.data.user.username}`,
+        duration: 4000,
+        action: {
+          label: 'Dashboard',
+          onClick: () => window.location.href = '/dashboard',
+        },
+      })
       notify()
       return true
     } else {
@@ -66,7 +93,14 @@ const login = async (credentials: { username: string; password: string }) => {
         isLoading: false,
       }
       // Show error toast
-      toast.error(`Login Failed: ${errorMessage}`)
+      toast.error('Login Failed', {
+        description: errorMessage,
+        duration: 5000,
+        action: {
+          label: 'Try Again',
+          onClick: () => console.log('Retry login'),
+        },
+      })
       notify()
       return false
     }
@@ -78,7 +112,14 @@ const login = async (credentials: { username: string; password: string }) => {
       isLoading: false,
     }
     // Show error toast
-    toast.error(`Login Failed: ${errorMessage}`)
+    toast.error('Network Error', {
+      description: errorMessage,
+      duration: 5000,
+      action: {
+        label: 'Retry',
+        onClick: () => window.location.reload(),
+      },
+    })
     notify()
     return false
   }
@@ -89,8 +130,6 @@ const register = async (userData: {
   email: string
   password: string
   password_confirm: string
-  first_name?: string
-  last_name?: string
 }) => {
   state = { ...state, isLoading: true, error: null }
   notify()
@@ -107,7 +146,14 @@ const register = async (userData: {
         error: null,
       }
       // Show success toast
-      toast.success(`Welcome to Pollaroo, ${response.data.user.username}!`)
+      toast.success('Account Created!', {
+        description: `Welcome to Pollaroo, ${response.data.user.username}! You're now logged in.`,
+        duration: 5000,
+        action: {
+          label: 'Explore',
+          onClick: () => window.location.href = '/explore',
+        },
+      })
       notify()
       return true
     } else {
@@ -118,7 +164,14 @@ const register = async (userData: {
         isLoading: false,
       }
       // Show error toast
-      toast.error(`Registration Failed: ${errorMessage}`)
+      toast.error('Registration Failed', {
+        description: errorMessage,
+        duration: 5000,
+        action: {
+          label: 'Fix Issues',
+          onClick: () => console.log('Focus on form errors'),
+        },
+      })
       notify()
       return false
     }
@@ -130,7 +183,14 @@ const register = async (userData: {
       isLoading: false,
     }
     // Show error toast
-    toast.error(`Registration Failed: ${errorMessage}`)
+    toast.error('Registration Error', {
+      description: errorMessage,
+      duration: 5000,
+      action: {
+        label: 'Retry',
+        onClick: () => window.location.reload(),
+      },
+    })
     notify()
     return false
   }
@@ -143,10 +203,24 @@ const logout = async () => {
   try {
     await apiClient.logout()
     // Show success toast
-    toast.success("You have been successfully logged out.")
+    toast.success('See you later!', {
+      description: 'You have been successfully logged out.',
+      duration: 3000,
+      action: {
+        label: 'Login Again',
+        onClick: () => window.location.href = '/',
+      },
+    })
   } catch (error) {
     // Show error toast but still logout locally
-    toast.warning("Logged out locally, but server logout failed.")
+    toast.warning('Partial Logout', {
+      description: 'Logged out locally, but server logout failed.',
+      duration: 4000,
+      action: {
+        label: 'Dismiss',
+        onClick: () => {},
+      },
+    })
   }
   
   state = {
@@ -160,6 +234,11 @@ const logout = async () => {
 }
 
 const loadUser = async () => {
+  // Ensure we're on the client side
+  if (typeof window === 'undefined') {
+    return
+  }
+  
   // Check if we have a token in localStorage first
   const token = localStorage.getItem('access_token')
   if (!token) {
@@ -189,8 +268,10 @@ const loadUser = async () => {
       }
     } else {
       // Clear invalid token
-      localStorage.removeItem('access_token')
-      localStorage.removeItem('refresh_token')
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('access_token')
+        localStorage.removeItem('refresh_token')
+      }
       state = {
         ...state,
         user: null,
@@ -200,8 +281,10 @@ const loadUser = async () => {
     }
   } catch (error: any) {
     // Clear invalid token on error
-    localStorage.removeItem('access_token')
-    localStorage.removeItem('refresh_token')
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('access_token')
+      localStorage.removeItem('refresh_token')
+    }
     state = {
       ...state,
       user: null,
