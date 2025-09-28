@@ -44,9 +44,9 @@ const DialogTrigger = React.forwardRef<HTMLButtonElement, DialogTriggerProps>(
   ({ className, onClick, asChild = false, ...props }, ref) => {
     const { onOpenChange } = useDialog()
     
-    const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    const handleClick = (event: React.MouseEvent) => {
       onOpenChange(true)
-      onClick?.(event)
+      onClick?.(event as React.MouseEvent<HTMLButtonElement>)
     }
 
     if (asChild) {
