@@ -85,12 +85,28 @@ class ApiClient {
       const data = await response.json()
 
       if (!response.ok) {
-        return { error: data.message || data.error || 'An error occurred' }
+        // Better error handling for different response codes
+        if (response.status === 401) {
+          // Token is invalid or expired
+          this.clearToken()
+          return { error: 'Authentication expired. Please log in again.' }
+        } else if (response.status >= 500) {
+          return { error: 'Server error. Please try again later.' }
+        } else if (response.status === 404) {
+          return { error: 'Endpoint not found.' }
+        } else {
+          return { error: data.message || data.error || data.detail || `Request failed with status ${response.status}` }
+        }
       }
 
       return { data }
     } catch (error) {
-      return { error: 'Network error occurred' }
+      // More specific network error handling
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        return { error: 'Cannot connect to server. Please check if the backend server is running.' }
+      }
+      console.error('API Request Error:', error)
+      return { error: `Network error: ${error instanceof Error ? error.message : 'Unknown error'}` }
     }
   }
 
@@ -258,4 +274,5 @@ export interface Poll {
   total_votes: number
   is_active: boolean
   is_expired: boolean
+  has_voted?: boolean  // Track if current user has voted
 }
