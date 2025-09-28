@@ -1,18 +1,20 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { AuthModal } from "@/components/auth/auth-modal"
 import { useAuth } from "@/store/auth"
-import { BarChart3, Users, Zap, Share2, LogOut, User } from "@/components/icons"
+import { BarChart3, Users, Zap, Share2, LogOut, User, Eye, Settings } from "lucide-react"
 
 export default function HomePage() {
+  const router = useRouter()
   const [isCreating, setIsCreating] = useState(false)
   const [authModalOpen, setAuthModalOpen] = useState(false)
   const [authMode, setAuthMode] = useState<"login" | "register">("login")
-  const { user, isAuthenticated, logout, loadUser } = useAuth()
+  const { user, isAuthenticated, logout, loadUser, isLoading } = useAuth()
 
   useEffect(() => {
     // Only try to load user if there's a token
@@ -22,6 +24,8 @@ export default function HomePage() {
     }
   }, [loadUser])
 
+  // No automatic redirect - let users stay on home page if they want
+
   const handleAuthClick = (mode: "login" | "register") => {
     setAuthMode(mode)
     setAuthModalOpen(true)
@@ -29,6 +33,18 @@ export default function HomePage() {
 
   const handleLogout = async () => {
     await logout()
+  }
+
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex items-center space-x-2">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+          <span>Loading...</span>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -42,22 +58,89 @@ export default function HomePage() {
           </div>
           <div className="flex items-center space-x-4">
             {isAuthenticated ? (
-              <>
-            <Button variant="ghost" onClick={() => window.location.href = '/dashboard'}>
-              Dashboard
-            </Button>
-            <Button variant="ghost" onClick={() => window.location.href = '/test-connection'}>
-              Test Connection
-            </Button>
-                <div className="flex items-center space-x-2">
-                  <User className="h-4 w-4" />
-                  <span className="text-sm">{user?.username}</span>
+              <div className="flex items-center space-x-4">
+                {/* User Avatar + Dropdown */}
+                <div className="relative group">
+                  <Button variant="ghost" className="flex items-center space-x-2">
+                    <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center">
+                      <User className="h-4 w-4" />
+                    </div>
+                    <span className="text-sm font-medium">{user?.username}</span>
+                  </Button>
+                  
+                  {/* Enhanced Dropdown Menu */}
+                  <div className="absolute right-0 top-full mt-2 w-56 bg-card border border-border rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    <div className="py-2">
+                      {/* User Info Header */}
+                      <div className="px-4 py-3 border-b border-border bg-muted/30">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center">
+                            <User className="h-5 w-5" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold truncate">{user?.username}</p>
+                            <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Menu Items */}
+                      <div className="py-1">
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-start px-4 py-3 h-auto hover:bg-accent/10"
+                          onClick={() => router.push('/dashboard')}
+                        >
+                          <BarChart3 className="h-4 w-4 mr-3 text-accent" />
+                          <div className="flex flex-col items-start">
+                            <span className="text-sm font-medium">Dashboard</span>
+                            <span className="text-xs text-muted-foreground">Manage your polls</span>
+                          </div>
+                        </Button>
+                        
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-start px-4 py-3 h-auto hover:bg-accent/10"
+                          onClick={() => {/* TODO: Implement profile page */}}
+                        >
+                          <User className="h-4 w-4 mr-3 text-accent" />
+                          <div className="flex flex-col items-start">
+                            <span className="text-sm font-medium">Profile</span>
+                            <span className="text-xs text-muted-foreground">View your profile</span>
+                          </div>
+                        </Button>
+                        
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-start px-4 py-3 h-auto hover:bg-accent/10"
+                          onClick={() => {/* TODO: Implement settings page */}}
+                        >
+                          <Settings className="h-4 w-4 mr-3 text-accent" />
+                          <div className="flex flex-col items-start">
+                            <span className="text-sm font-medium">Settings</span>
+                            <span className="text-xs text-muted-foreground">Account preferences</span>
+                          </div>
+                        </Button>
+                      </div>
+                      
+                      {/* Logout Section */}
+                      <div className="border-t border-border pt-1">
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-start px-4 py-3 h-auto text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20"
+                          onClick={handleLogout}
+                        >
+                          <LogOut className="h-4 w-4 mr-3" />
+                          <div className="flex flex-col items-start">
+                            <span className="text-sm font-medium">Logout</span>
+                            <span className="text-xs text-muted-foreground">Sign out of your account</span>
+                          </div>
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <Button variant="ghost" onClick={handleLogout}>
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Logout
-                </Button>
-              </>
+              </div>
             ) : (
               <>
                 <Button variant="ghost" onClick={() => handleAuthClick("login")}>
@@ -93,16 +176,26 @@ export default function HomePage() {
               className="text-lg px-8 py-6"
               onClick={() => isAuthenticated ? setIsCreating(true) : handleAuthClick("register")}
             >
-              Create Your First Poll
+              {isAuthenticated ? "Create New Poll" : "Create Your First Poll"}
             </Button>
             <Button 
               variant="outline" 
               size="lg" 
               className="text-lg px-8 py-6"
-              onClick={() => window.location.href = '/polls'}
+              onClick={() => router.push('/explore')}
             >
               Explore Public Polls
             </Button>
+            {isAuthenticated && (
+              <Button 
+                variant="secondary" 
+                size="lg" 
+                className="text-lg px-8 py-6"
+                onClick={() => router.push('/dashboard')}
+              >
+                Go to Dashboard
+              </Button>
+            )}
           </div>
         </div>
       </section>

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useAuth } from "@/store/auth"
-import { Eye, EyeOff, Loader2 } from "@/components/icons"
+import { Eye, EyeOff, Loader2 } from "lucide-react"
 
 interface RegisterFormProps {
   onSuccess?: () => void

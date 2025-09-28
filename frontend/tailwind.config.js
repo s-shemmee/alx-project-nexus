@@ -43,6 +43,39 @@ module.exports = {
         border: "var(--border)",
         input: "var(--input)",
         ring: "var(--ring)",
+        // Additional semantic colors
+        success: {
+          DEFAULT: "var(--success)",
+          foreground: "var(--success-foreground)",
+        },
+        warning: {
+          DEFAULT: "var(--warning)",
+          foreground: "var(--warning-foreground)",
+        },
+        info: {
+          DEFAULT: "var(--info)",
+          foreground: "var(--info-foreground)",
+        },
+        pink: {
+          DEFAULT: "var(--pink)",
+          foreground: "var(--pink-foreground)",
+        },
+        peach: {
+          DEFAULT: "var(--peach)",
+          foreground: "var(--peach-foreground)",
+        },
+        sky: {
+          DEFAULT: "var(--sky)",
+          foreground: "var(--sky-foreground)",
+        },
+        teal: {
+          DEFAULT: "var(--teal)",
+          foreground: "var(--teal-foreground)",
+        },
+        lavender: {
+          DEFAULT: "var(--lavender)",
+          foreground: "var(--lavender-foreground)",
+        },
         // Catppuccin Mocha (Dark Mode - Default)
         mocha: {
           rosewater: "#f5e0dc",

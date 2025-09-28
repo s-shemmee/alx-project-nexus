@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { apiClient, Poll } from "@/lib/api"
-import { BarChart3, Users, Calendar, Search, TrendingUp } from "@/components/icons"
+import { BarChart3, Users, Calendar, Search, TrendingUp, Loader2 } from "lucide-react"
 
 export default function PublicPollsPage() {
   const [polls, setPolls] = useState<Poll[]>([])
@@ -94,7 +94,7 @@ export default function PublicPollsPage() {
         {/* Polls Grid */}
         {isLoading ? (
           <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent mx-auto"></div>
+            <Loader2 className="h-8 w-8 animate-spin mx-auto" />
             <p className="mt-4 text-muted-foreground">Loading polls...</p>
           </div>
         ) : polls.length === 0 ? (

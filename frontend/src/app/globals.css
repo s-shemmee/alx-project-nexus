@@ -25,6 +25,24 @@
     --input: #bcc0cc; /* Surface1 */
     --ring: #8839ef; /* Mauve */
     --radius: 0.5rem;
+
+    /* Additional Catppuccin Latte Colors */
+    --success: #40a02b; /* Green */
+    --success-foreground: #eff1f5; /* Base */
+    --warning: #df8e1d; /* Yellow */
+    --warning-foreground: #eff1f5; /* Base */
+    --info: #1e66f5; /* Blue */
+    --info-foreground: #eff1f5; /* Base */
+    --pink: #ea76cb; /* Pink */
+    --pink-foreground: #eff1f5; /* Base */
+    --peach: #fe640b; /* Peach */
+    --peach-foreground: #eff1f5; /* Base */
+    --sky: #04a5e5; /* Sky */
+    --sky-foreground: #eff1f5; /* Base */
+    --teal: #179299; /* Teal */
+    --teal-foreground: #eff1f5; /* Base */
+    --lavender: #7287fd; /* Lavender */
+    --lavender-foreground: #eff1f5; /* Base */
   }
 
   .dark {
@@ -48,6 +66,24 @@
     --border: #45475a; /* Surface1 */
     --input: #313244; /* Surface0 */
     --ring: #cba6f7; /* Mauve */
+
+    /* Additional Catppuccin Mocha Colors */
+    --success: #a6e3a1; /* Green */
+    --success-foreground: #1e1e2e; /* Base */
+    --warning: #f9e2af; /* Yellow */
+    --warning-foreground: #1e1e2e; /* Base */
+    --info: #89b4fa; /* Blue */
+    --info-foreground: #1e1e2e; /* Base */
+    --pink: #f5c2e7; /* Pink */
+    --pink-foreground: #1e1e2e; /* Base */
+    --peach: #fab387; /* Peach */
+    --peach-foreground: #1e1e2e; /* Base */
+    --sky: #89dceb; /* Sky */
+    --sky-foreground: #1e1e2e; /* Base */
+    --teal: #94e2d5; /* Teal */
+    --teal-foreground: #1e1e2e; /* Base */
+    --lavender: #b4befe; /* Lavender */
+    --lavender-foreground: #1e1e2e; /* Base */
   }
 }
 
@@ -85,6 +121,46 @@
   .btn-secondary:hover {
     background-color: var(--secondary);
     opacity: 0.8;
+  }
+
+  .btn-success {
+    background-color: var(--success);
+    color: var(--success-foreground);
+  }
+  
+  .btn-success:hover {
+    background-color: var(--success);
+    opacity: 0.9;
+  }
+
+  .btn-warning {
+    background-color: var(--warning);
+    color: var(--warning-foreground);
+  }
+  
+  .btn-warning:hover {
+    background-color: var(--warning);
+    opacity: 0.9;
+  }
+
+  .btn-info {
+    background-color: var(--info);
+    color: var(--info-foreground);
+  }
+  
+  .btn-info:hover {
+    background-color: var(--info);
+    opacity: 0.9;
+  }
+
+  .btn-pink {
+    background-color: var(--pink);
+    color: var(--pink-foreground);
+  }
+  
+  .btn-pink:hover {
+    background-color: var(--pink);
+    opacity: 0.9;
   }
   
   .btn-outline {
@@ -128,5 +204,47 @@
   .input:focus-visible {
     outline: none;
     box-shadow: 0 0 0 2px var(--ring);
+  }
+
+  /* Status indicators */
+  .status-success {
+    background-color: var(--success);
+    color: var(--success-foreground);
+  }
+  
+  .status-warning {
+    background-color: var(--warning);
+    color: var(--warning-foreground);
+  }
+  
+  .status-info {
+    background-color: var(--info);
+    color: var(--info-foreground);
+  }
+  
+  .status-pink {
+    background-color: var(--pink);
+    color: var(--pink-foreground);
+  }
+
+  /* Gradient backgrounds */
+  .gradient-primary {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+  }
+  
+  .gradient-success {
+    background: linear-gradient(135deg, var(--success), var(--teal));
+  }
+  
+  .gradient-warning {
+    background: linear-gradient(135deg, var(--warning), var(--peach));
+  }
+  
+  .gradient-info {
+    background: linear-gradient(135deg, var(--info), var(--sky));
+  }
+  
+  .gradient-pink {
+    background: linear-gradient(135deg, var(--pink), var(--lavender));
   }
 }

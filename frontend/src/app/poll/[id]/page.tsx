@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useAuth } from "@/store/auth"
 import { apiClient, Poll } from "@/lib/api"
-import { BarChart3, Share2, Users, Calendar, CheckCircle } from "@/components/icons"
+import { BarChart3, Share2, Users, Calendar, CheckCircle, Loader2 } from "lucide-react"
 import { PollResults } from "@/components/poll/poll-results"
+import { PollShare } from "@/components/poll/poll-share"
 
 export default function PollPage() {
   const params = useParams()
@@ -20,6 +21,7 @@ export default function PollPage() {
   const [selectedOption, setSelectedOption] = useState<number | null>(null)
   const [hasVoted, setHasVoted] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [shareModalOpen, setShareModalOpen] = useState(false)
 
   useEffect(() => {
     if (pollId) {
@@ -65,21 +67,15 @@ export default function PollPage() {
     }
   }
 
-  const handleShare = async () => {
-    const shareUrl = `${window.location.origin}/poll/${pollId}`
-    try {
-      await navigator.clipboard.writeText(shareUrl)
-      // You could add a toast notification here
-    } catch (error) {
-      console.error('Failed to copy link:', error)
-    }
+  const handleShare = () => {
+    setShareModalOpen(true)
   }
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent mx-auto"></div>
+          <Loader2 className="h-8 w-8 animate-spin mx-auto" />
           <p className="mt-4 text-muted-foreground">Loading poll...</p>
         </div>
       </div>
@@ -211,7 +207,7 @@ export default function PollPage() {
                 >
                   {isVoting ? (
                     <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-background mr-2"></div>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
                       Submitting...
                     </>
                   ) : (
@@ -223,6 +219,16 @@ export default function PollPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Share Modal */}
+      {poll && (
+        <PollShare
+          pollId={poll.id}
+          pollTitle={poll.title}
+          isOpen={shareModalOpen}
+          onClose={() => setShareModalOpen(false)}
+        />
+      )}
     </div>
   )
 }

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { apiClient, Poll } from "@/lib/api"
-import { X, Plus, Trash2, Loader2 } from "@/components/icons"
+import { X, Plus, Trash2, Loader2, Calendar, Globe, Lock } from "lucide-react"
 
 interface PollCreateModalProps {
   isOpen: boolean

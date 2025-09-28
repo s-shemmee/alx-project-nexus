@@ -1,5 +1,6 @@
 import React from 'react'
 import { apiClient, User } from '@/lib/api'
+import { toast } from 'sonner'
 
 interface AuthState {
   user: User | null
@@ -53,23 +54,31 @@ const login = async (credentials: { username: string; password: string }) => {
         isLoading: false,
         error: null,
       }
+      // Show success toast
+      toast.success(`Welcome back, ${response.data.user.username}!`)
       notify()
       return true
     } else {
+      const errorMessage = response.error || 'Login failed'
       state = {
         ...state,
-        error: response.error || 'Login failed',
+        error: errorMessage,
         isLoading: false,
       }
+      // Show error toast
+      toast.error(`Login Failed: ${errorMessage}`)
       notify()
       return false
     }
-  } catch (error) {
+  } catch (error: any) {
+    const errorMessage = error?.response?.data?.error || error?.message || 'Network error occurred'
     state = {
       ...state,
-      error: 'Network error occurred',
+      error: errorMessage,
       isLoading: false,
     }
+    // Show error toast
+    toast.error(`Login Failed: ${errorMessage}`)
     notify()
     return false
   }
@@ -97,23 +106,31 @@ const register = async (userData: {
         isLoading: false,
         error: null,
       }
+      // Show success toast
+      toast.success(`Welcome to Pollaroo, ${response.data.user.username}!`)
       notify()
       return true
     } else {
+      const errorMessage = response.error || 'Registration failed'
       state = {
         ...state,
-        error: response.error || 'Registration failed',
+        error: errorMessage,
         isLoading: false,
       }
+      // Show error toast
+      toast.error(`Registration Failed: ${errorMessage}`)
       notify()
       return false
     }
-  } catch (error) {
+  } catch (error: any) {
+    const errorMessage = error?.response?.data?.error || error?.message || 'Network error occurred'
     state = {
       ...state,
-      error: 'Network error occurred',
+      error: errorMessage,
       isLoading: false,
     }
+    // Show error toast
+    toast.error(`Registration Failed: ${errorMessage}`)
     notify()
     return false
   }
@@ -125,8 +142,11 @@ const logout = async () => {
   
   try {
     await apiClient.logout()
+    // Show success toast
+    toast.success("You have been successfully logged out.")
   } catch (error) {
-    // Ignore logout errors
+    // Show error toast but still logout locally
+    toast.warning("Logged out locally, but server logout failed.")
   }
   
   state = {
@@ -140,6 +160,19 @@ const logout = async () => {
 }
 
 const loadUser = async () => {
+  // Check if we have a token in localStorage first
+  const token = localStorage.getItem('access_token')
+  if (!token) {
+    state = {
+      ...state,
+      user: null,
+      isAuthenticated: false,
+      isLoading: false,
+    }
+    notify()
+    return
+  }
+
   state = { ...state, isLoading: true }
   notify()
   
@@ -152,8 +185,12 @@ const loadUser = async () => {
         user: response.data,
         isAuthenticated: true,
         isLoading: false,
+        error: null,
       }
     } else {
+      // Clear invalid token
+      localStorage.removeItem('access_token')
+      localStorage.removeItem('refresh_token')
       state = {
         ...state,
         user: null,
@@ -161,12 +198,16 @@ const loadUser = async () => {
         isLoading: false,
       }
     }
-  } catch (error) {
+  } catch (error: any) {
+    // Clear invalid token on error
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('refresh_token')
     state = {
       ...state,
       user: null,
       isAuthenticated: false,
       isLoading: false,
+      error: error?.message || 'Failed to load user',
     }
   }
   notify()
