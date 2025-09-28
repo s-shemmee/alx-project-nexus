@@ -7,16 +7,23 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Badge } from "@/components/ui/badge"
 import { Share2, Copy, Check, Twitter, Facebook, Mail, Link2, QrCode } from "lucide-react"
 
-interface PollShareProps {
-  pollId: number
-  pollTitle: string
-  isOpen: boolean
-  onClose: () => void
+interface Poll {
+  id: number
+  title: string
+  description?: string
+  total_votes?: number
 }
 
-export function PollShare({ pollId, pollTitle, isOpen, onClose }: PollShareProps) {
+interface PollShareProps {
+  isOpen: boolean
+  onClose: () => void
+  poll: Poll
+  pollUrl: string
+}
+
+export function PollShare({ isOpen, onClose, poll, pollUrl }: PollShareProps) {
   const [copied, setCopied] = useState(false)
-  const shareUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/poll/${pollId}`
+  const shareUrl = pollUrl
   
   const copyToClipboard = async () => {
     try {
@@ -29,7 +36,7 @@ export function PollShare({ pollId, pollTitle, isOpen, onClose }: PollShareProps
   }
 
   const shareOnTwitter = () => {
-    const text = `Check out this poll: "${pollTitle}"`
+    const text = `Check out this poll: "${poll.title}"`
     const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`
     window.open(url, '_blank')
   }
@@ -40,8 +47,8 @@ export function PollShare({ pollId, pollTitle, isOpen, onClose }: PollShareProps
   }
 
   const shareViaEmail = () => {
-    const subject = `Vote on this poll: ${pollTitle}`
-    const body = `Hi!\\n\\nI'd love to get your opinion on this poll:\\n\\n"${pollTitle}"\\n\\nVote here: ${shareUrl}\\n\\nThanks!`
+    const subject = `Vote on this poll: ${poll.title}`
+    const body = `Hi!\\n\\nI'd love to get your opinion on this poll:\\n\\n"${poll.title}"\\n\\nVote here: ${shareUrl}\\n\\nThanks!`
     const url = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
     window.open(url)
   }
@@ -69,7 +76,7 @@ export function PollShare({ pollId, pollTitle, isOpen, onClose }: PollShareProps
           {/* Poll Info */}
           <div className="p-3 bg-muted rounded-lg">
             <h4 className="font-medium text-sm mb-1">Poll Title</h4>
-            <p className="text-sm text-muted-foreground line-clamp-2">{pollTitle}</p>
+            <p className="text-sm text-muted-foreground line-clamp-2">{poll.title}</p>
           </div>
 
           {/* Copy Link */}
