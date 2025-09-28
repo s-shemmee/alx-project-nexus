@@ -1,11 +1,30 @@
+/**
+ * API Client Configuration
+ * 
+ * Centralized API client for communication with the Django backend.
+ * Handles authentication, token management, and HTTP requests.
+ * 
+ * Features:
+ * - JWT token authentication with automatic header injection
+ * - Request/response interceptors for error handling
+ * - TypeScript interfaces for type safety
+ * - Automatic token storage and retrieval from localStorage
+ * - Environment-based API URL configuration
+ * - Error response handling with proper error types
+ * - Support for all CRUD operations (GET, POST, PUT, DELETE)
+ * - User authentication and profile management endpoints
+ */
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
 
+// Generic API response interface
 interface ApiResponse<T> {
   data?: T
   error?: string
   message?: string
 }
 
+// Authentication response interface
 interface AuthResponse {
   user: User
   tokens: {
@@ -14,17 +33,20 @@ interface AuthResponse {
   }
 }
 
+// API Client class for handling HTTP requests
 class ApiClient {
   private baseURL: string
   private token: string | null = null
 
   constructor(baseURL: string) {
     this.baseURL = baseURL
+    // Initialize token from localStorage on client-side
     if (typeof window !== 'undefined') {
       this.token = localStorage.getItem('access_token')
     }
   }
 
+  // Set authentication token and persist to localStorage
   setToken(token: string) {
     this.token = token
     if (typeof window !== 'undefined') {
@@ -45,13 +67,13 @@ class ApiClient {
   ): Promise<ApiResponse<T>> {
     const url = `${this.baseURL}${endpoint}`
     
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...options.headers,
+      ...(options.headers as Record<string, string>),
     }
 
     if (this.token) {
-      headers.Authorization = `Bearer ${this.token}`
+      headers['Authorization'] = `Bearer ${this.token}`
     }
 
     try {
@@ -72,14 +94,12 @@ class ApiClient {
     }
   }
 
-  // Auth endpoints
+    // Auth endpoints
   async register(userData: {
     username: string
     email: string
     password: string
     password_confirm: string
-    first_name?: string
-    last_name?: string
   }) {
     return this.request<AuthResponse>('/auth/register/', {
       method: 'POST',
@@ -87,7 +107,7 @@ class ApiClient {
     })
   }
 
-  async login(credentials: { username: string; password: string }) {
+  async login(credentials: { login: string; password: string }) {
     const response = await this.request<AuthResponse>('/auth/login/', {
       method: 'POST',
       body: JSON.stringify(credentials),
@@ -146,7 +166,7 @@ class ApiClient {
     })
   }
 
-  async updatePoll(id: number, pollData: Partial<Poll>) {
+  async updatePoll(id: number, pollData: PollUpdate) {
     return this.request<Poll>(`/polls/${id}/update/`, {
       method: 'PUT',
       body: JSON.stringify(pollData),
@@ -200,20 +220,41 @@ export interface User {
 export interface Option {
   id: number
   text: string
-  vote_count: number
-  vote_percentage: number
+  votes: number  // Changed from vote_count to votes for consistency
+  vote_count?: number  // Keep both for backward compatibility
+  vote_percentage?: number
+}
+
+// Flexible option interface for updates
+export interface OptionUpdate {
+  id?: number
+  text: string
+  votes?: number
+  vote_count?: number
+}
+
+// Flexible poll interface for updates
+export interface PollUpdate {
+  title?: string
+  description?: string
+  options?: OptionUpdate[]
+  is_public?: boolean
+  expires_at?: string | null
 }
 
 export interface Poll {
   id: number
   title: string
   description?: string
-  creator: string
+  creator: { 
+    id: number
+    username: string
+  } | string  // Allow both object and string for creator
   is_public: boolean
-  expires_at?: string
+  expires_at?: string | null  // Allow null for better compatibility
   created_at: string
   updated_at?: string
-  options?: Option[]
+  options: Option[]  // Make required, not optional
   total_votes: number
   is_active: boolean
   is_expired: boolean
