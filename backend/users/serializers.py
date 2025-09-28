@@ -5,13 +5,13 @@ from .models import User
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
-    """Serializer for user registration"""
+    """Serializer for user registration - simplified"""
     password = serializers.CharField(write_only=True, validators=[validate_password])
     password_confirm = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'first_name', 'last_name', 'password', 'password_confirm')
+        fields = ('username', 'email', 'password', 'password_confirm')
 
     def validate(self, attrs):
         if attrs['password'] != attrs['password_confirm']:
@@ -25,24 +25,37 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
 
 class UserLoginSerializer(serializers.Serializer):
-    """Serializer for user login"""
-    username = serializers.CharField()
+    """Serializer for user login - accepts email or username"""
+    login = serializers.CharField()  # Can be username or email
     password = serializers.CharField()
 
     def validate(self, attrs):
-        username = attrs.get('username')
+        login = attrs.get('login')
         password = attrs.get('password')
 
-        if username and password:
-            user = authenticate(username=username, password=password)
-            if not user:
+        if login and password:
+            # Try to find user by username or email
+            user = None
+            
+            # First try username
+            try:
+                user = User.objects.get(username=login)
+            except User.DoesNotExist:
+                # Then try email
+                try:
+                    user = User.objects.get(email=login)
+                except User.DoesNotExist:
+                    pass
+            
+            if user and user.check_password(password):
+                if not user.is_active:
+                    raise serializers.ValidationError('User account is disabled')
+                attrs['user'] = user
+                return attrs
+            else:
                 raise serializers.ValidationError('Invalid credentials')
-            if not user.is_active:
-                raise serializers.ValidationError('User account is disabled')
-            attrs['user'] = user
-            return attrs
         else:
-            raise serializers.ValidationError('Must include username and password')
+            raise serializers.ValidationError('Must include login and password')
 
 
 class UserProfileSerializer(serializers.ModelSerializer):

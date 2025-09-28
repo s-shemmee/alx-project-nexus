@@ -3,11 +3,13 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
+from django.utils import timezone
 from .models import Poll, Option, Vote
 from .serializers import (
     PollListSerializer, 
     PollDetailSerializer, 
     PollCreateSerializer,
+    PollUpdateSerializer,
     VoteSerializer,
     PollResultsSerializer
 )
@@ -45,6 +47,17 @@ class PollCreateView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(creator=self.request.user)
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        
+        # Return the created poll with full details including ID
+        created_poll = serializer.instance
+        response_serializer = PollDetailSerializer(created_poll)
+        headers = self.get_success_headers(response_serializer.data)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class PollDetailView(generics.RetrieveAPIView):
@@ -53,16 +66,37 @@ class PollDetailView(generics.RetrieveAPIView):
     permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
-        return Poll.objects.filter(is_public=True)
+        # Allow access to public polls OR polls owned by the authenticated user
+        if self.request.user.is_authenticated:
+            return Poll.objects.filter(
+                Q(is_public=True) | Q(creator=self.request.user)
+            )
+        else:
+            return Poll.objects.filter(is_public=True)
+    
+    def get_serializer_context(self):
+        """Pass request context to serializer for has_voted field"""
+        return {'request': self.request}
 
 
 class PollUpdateView(generics.UpdateAPIView):
     """Update poll (owner only)"""
-    serializer_class = PollCreateSerializer
+    serializer_class = PollUpdateSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         return Poll.objects.filter(creator=self.request.user)
+    
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        
+        # Return the updated poll with full details
+        response_serializer = PollDetailSerializer(instance)
+        return Response(response_serializer.data)
 
 
 class PollDeleteView(generics.DestroyAPIView):
@@ -75,18 +109,29 @@ class PollDeleteView(generics.DestroyAPIView):
 
 class UserPollsView(generics.ListAPIView):
     """Get user's polls"""
-    serializer_class = PollListSerializer
+    serializer_class = PollDetailSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         return Poll.objects.filter(creator=self.request.user)
+    
+    def get_serializer_context(self):
+        """Pass request context to serializer for has_voted field"""
+        return {'request': self.request}
 
 
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def vote_view(request, poll_id):
     """Vote on a poll"""
-    poll = get_object_or_404(Poll, id=poll_id, is_public=True)
+    # Allow voting on public polls OR polls owned by the authenticated user
+    if request.user.is_authenticated:
+        poll = get_object_or_404(
+            Poll, 
+            Q(id=poll_id) & (Q(is_public=True) | Q(creator=request.user))
+        )
+    else:
+        poll = get_object_or_404(Poll, id=poll_id, is_public=True)
     
     if poll.is_expired:
         return Response(
@@ -113,7 +158,15 @@ def vote_view(request, poll_id):
 @permission_classes([permissions.AllowAny])
 def poll_results_view(request, poll_id):
     """Get poll results"""
-    poll = get_object_or_404(Poll, id=poll_id, is_public=True)
+    # Allow access to public polls OR polls owned by the authenticated user
+    if request.user.is_authenticated:
+        poll = get_object_or_404(
+            Poll, 
+            Q(id=poll_id) & (Q(is_public=True) | Q(creator=request.user))
+        )
+    else:
+        poll = get_object_or_404(Poll, id=poll_id, is_public=True)
+    
     serializer = PollResultsSerializer(poll)
     return Response(serializer.data)
 
