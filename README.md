@@ -2,6 +2,25 @@
 
 A modern, full-stack polling application that allows users to create, share, and participate in interactive polls. Built with Django REST Framework and Next.js, featuring real-time voting, user authentication, and responsive design.
 
+## 📸 Application Preview
+
+<div align="center">
+  <img src="frontend/public/pre1.JPG" alt="Pollaroo Homepage" width="800"/>
+  <p><em>Homepage - Clean and modern interface</em></p>
+</div>
+
+<div align="center">
+  <img src="frontend/public/pre2.JPG" alt="Pollaroo Dashboard" width="800"/>
+  <p><em>User Dashboard - Manage your polls</em></p>
+</div>
+
+<div align="center">
+  <img src="frontend/public/pre3.JPG" alt="Pollaroo Poll Interface" width="800"/>
+  <p><em>Poll Interface - Interactive voting experience</em></p>
+</div>
+
+
+
 ## 🌟 Features
 
 - 🗳️ **Create Polls**: Build polls with multiple options and settings
@@ -88,6 +107,11 @@ alx-project-nexus/
 ### Voting
 - `POST /api/polls/{id}/vote/` - Vote on a poll
 - `GET /api/polls/{id}/results/` - Get poll results
+
+## ⚠️ Development Status
+
+**Current Phase:** Active Development  
+While the core authentication system and API endpoints are functionally operational, some frontend-backend integration aspects are still being refined. The application demonstrates full-stack capabilities but may have intermittent communication issues that are actively being addressed.
 
 ## 🚀 Setup Instructions
 
